@@ -10,7 +10,7 @@ The current publicly available version of Sourcebook is at [housingforwardva.org
 
 ## How this repository is organized
 
-[to add]
+The main Sourcebook directory includes seven folders for each data topic. Within each of these category folders are subfolders containing the data and documentation for each dashboard.
 
 ## Sponsors and acknowledgements
 
