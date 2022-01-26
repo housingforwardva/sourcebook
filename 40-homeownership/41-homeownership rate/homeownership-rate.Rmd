@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, eval=FALSE)
 ```
 
 ## Data Sources
@@ -32,7 +32,7 @@ through I to the end of the table ID.
 The following script pulls Table B25003 for all races and ethnicity, and cleans
 the data in a single script.
 
-``````{r Download B25003, echo=T, message=FALSE, warning=FALSE, paged.print=FALSE, results='hide'}
+```{r Download B25003, echo=T, message=FALSE, warning=FALSE, paged.print=FALSE, results='hide'}
 
 #Load the the necessary packages to download the data from Census API.
 library(tidyverse)
@@ -126,3 +126,75 @@ write_csv(output_b25003_wide, "b25003_wide.csv")
 
 ```
 
+The following script pulls data on tenure by age of householder. This data is used
+to analyze homeownership rate by age using Table B25007.
+
+```{r Download B25007, echo=T, message=FALSE, warning=FALSE, paged.print=FALSE, results='hide'}
+#Load the the necessary packages to download the data from Census API.
+library(tidyverse)
+library(tidycensus)
+
+# Create an object for all years.
+years <- 2010:2019
+
+# Create an object for all tables needed. This includes a table that aggregates 
+# to total housing units.
+b25007 <- "B25007"
+
+# Pull the table variables, excluding Puerto Rico.
+b25007_defns <- load_variables(2019, "acs5") %>%
+  filter(str_sub(name, end = 6) %in% b25007)%>%
+  filter(str_detect(name, "PR")== FALSE)
+
+# Clean the variables provided by Census API and separate needed variables into
+# appropriate columns.
+
+b25007_cleaned <- b25007_defns %>%
+  separate(label, into = c("est", "tot", "tenure", "age"), sep = "!!") %>%
+  select(variable = name, tenure, age)%>%
+    mutate(across(.fns = ~replace_na(.x, "All")),
+         across(.fns = ~str_remove_all(.x, ":")))
+
+# Download the data for all counties in Virginia. Functions interate across all
+# tables and all years. If desiring to change to state then input "state" instead
+# of "county" and remove 'state = "VA" from function.
+output_b25007 <- map_dfr(b25007, function(tb) {
+  yearly_data <- map_dfr(years, function(yr) {
+    
+    acs_pull <- get_acs(
+      geography = "county",
+      table = tb,
+      year = yr,
+      state = "VA"
+    ) %>%
+      left_join(b25007_cleaned, by = "variable")
+    
+    acs_rearranged <- acs_pull %>%
+      mutate(year = yr) %>%
+      select(variable, year, locality = NAME, fips = GEOID, tenure, age,
+             estimate, moe)
+    
+    acs_rearranged
+  })
+  yearly_data
+})
+
+# Clean up the output by removing extra text and combining 
+output_b25007 <- output_b25007 %>%
+  mutate(across(.fns = ~str_remove_all(.x, ", Virginia")),
+         across(.fns = ~str_replace_all(.x, "Bedford city", "Bedford County")),
+         across(.fns = ~str_replace_all(.x, "51515", "51019")))
+
+# Data needs to be pivoted wider to more easily analyze for homeownership rate.
+output_b25007_wide <- output_b25007 %>%
+  select( -c(variable)) %>% 
+  pivot_wider(names_from = tenure,
+              values_from = c(estimate, moe)) %>% 
+  select(year:age, est_all = estimate_All, est_owner = "estimate_Owner occupied",
+         est_renter = "estimate_Renter occupied", moe_all = moe_All, 
+         moe_owner = "moe_Owner occupied",
+         moe_renter = "moe_Renter occupied") 
+
+# Write to csv.
+write.csv(output_b25007, "b25007.csv")
+```

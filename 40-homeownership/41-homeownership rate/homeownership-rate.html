@@ -279,6 +279,74 @@ output_b25003_wide &lt;- output_b25003_wide %&gt;%
 
 # Write to csv.
 write_csv(output_b25003_wide, &quot;b25003_wide.csv&quot;)</code></pre>
+<p>The following script pulls data on tenure by age of householder. This data is used to analyze homeownership rate by age using Table B25007.</p>
+<pre class="r"><code>#Load the the necessary packages to download the data from Census API.
+library(tidyverse)
+library(tidycensus)
+
+# Create an object for all years.
+years &lt;- 2010:2019
+
+# Create an object for all tables needed. This includes a table that aggregates 
+# to total housing units.
+b25007 &lt;- &quot;B25007&quot;
+
+# Pull the table variables, excluding Puerto Rico.
+b25007_defns &lt;- load_variables(2019, &quot;acs5&quot;) %&gt;%
+  filter(str_sub(name, end = 6) %in% b25007)%&gt;%
+  filter(str_detect(name, &quot;PR&quot;)== FALSE)
+
+# Clean the variables provided by Census API and separate needed variables into
+# appropriate columns.
+
+b25007_cleaned &lt;- b25007_defns %&gt;%
+  separate(label, into = c(&quot;est&quot;, &quot;tot&quot;, &quot;tenure&quot;, &quot;age&quot;), sep = &quot;!!&quot;) %&gt;%
+  select(variable = name, tenure, age)%&gt;%
+    mutate(across(.fns = ~replace_na(.x, &quot;All&quot;)),
+         across(.fns = ~str_remove_all(.x, &quot;:&quot;)))
+
+# Download the data for all counties in Virginia. Functions interate across all
+# tables and all years. If desiring to change to state then input &quot;state&quot; instead
+# of &quot;county&quot; and remove &#39;state = &quot;VA&quot; from function.
+output_b25007 &lt;- map_dfr(b25007, function(tb) {
+  yearly_data &lt;- map_dfr(years, function(yr) {
+    
+    acs_pull &lt;- get_acs(
+      geography = &quot;county&quot;,
+      table = tb,
+      year = yr,
+      state = &quot;VA&quot;
+    ) %&gt;%
+      left_join(b25007_cleaned, by = &quot;variable&quot;)
+    
+    acs_rearranged &lt;- acs_pull %&gt;%
+      mutate(year = yr) %&gt;%
+      select(variable, year, locality = NAME, fips = GEOID, tenure, age,
+             estimate, moe)
+    
+    acs_rearranged
+  })
+  yearly_data
+})
+
+# Clean up the output by removing extra text and combining 
+output_b25007 &lt;- output_b25007 %&gt;%
+  mutate(across(.fns = ~str_remove_all(.x, &quot;, Virginia&quot;)),
+         across(.fns = ~str_replace_all(.x, &quot;Bedford city&quot;, &quot;Bedford County&quot;)),
+         across(.fns = ~str_replace_all(.x, &quot;51515&quot;, &quot;51019&quot;)))
+
+# Data needs to be pivoted wider to more easily analyze for homeownership rate.
+output_b25007_wide &lt;- output_b25007 %&gt;%
+  select( -c(variable)) %&gt;% 
+  pivot_wider(names_from = tenure,
+              values_from = c(estimate, moe)) %&gt;% 
+  select(year:age, est_all = estimate_All, est_owner = &quot;estimate_Owner occupied&quot;,
+         est_renter = &quot;estimate_Renter occupied&quot;, moe_all = moe_All, 
+         moe_owner = &quot;moe_Owner occupied&quot;,
+         moe_renter = &quot;moe_Renter occupied&quot;) 
+
+# Write to csv.
+write.csv(output_b25007, &quot;b25007.csv&quot;)</code></pre>
 </div>
 
 
