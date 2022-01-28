@@ -172,7 +172,7 @@ pre code {
 
 <div id="data-sources" class="section level2">
 <h2>Data Sources</h2>
-<p>Household income is used throughout Sourcebook to help analyze affordability across Virginia. The main source for this data is the American Community Survey (ACS), which provides median household income by tenure, race/ethnicity, age group, and educational attainment. Helpful sometimes is a distribution of household incomes by tenure.</p>
+<p>Household income is used throughout Sourcebook to help analyze affordability across Virginia. The main source for this data is the American Community Survey (ACS), which provides median household income by tenure, race/ethnicity, and age group. Helpful sometimes is a distribution of household incomes by tenure.</p>
 <p>The following tables from ACS are pulled:</p>
 <ul>
 <li>B25119 - Median Household Income by Tenure</li>
@@ -180,12 +180,32 @@ pre code {
 <ul>
 <li>Append letters B-I for race and ethnicity</li>
 </ul></li>
-<li></li>
+<li>B19049 - Median Household Income by Age of Householder</li>
+<li>B25118 - Tenure by Household Income</li>
 </ul>
+<p>Median household income provides a better gauge of the <strong>typical</strong> household income rather than the average because it manages for the impact of outliers. Using ACS 1-year estimates is preferable with dollar-denominated data because they are based on the most current data, therefore more likely to show year-to-year fluctuations.</p>
+<p>However, 1-year estimates are only available for localities with populations over 20,000. In this case, 5-year estimates must be used because it is the only available data.</p>
+<p>It is also important to note that median household income data collected by the U.S. Census Bureau is not immediately comparable across time. Inflation impacts the comparability of dollar-denominated data across time. To account for this, dollar-denominated data should be adjusted to the most current year to make better comparisons. For more information on this, please see <a href="%22https://www.census.gov/content/dam/Census/library/publications/2018/acs/acs_general_handbook_2018_ch10.pdf%22">Using Dollar-Denominated Data</a>.</p>
 </div>
 <div id="data-collection" class="section level2">
-<h2>Data collection</h2>
-<p>Note that the <code>echo = FALSE</code> parameter was added to the code chunk to prevent printing of the R code that generated the plot.</p>
+<h2>Data Collection</h2>
+<pre class="r"><code># Load necessary libraries to pull data.
+library(tidyverse)
+library(tidycensus)
+
+# Create object for years.
+
+years &lt;- 2010:2019
+
+# Create objects for tables needed, which will be B25119, B19013, and B19049.
+
+b25119 &lt;- &quot;B25119&quot;
+b19013 &lt;- paste0(&quot;B19013&quot;, LETTERS[2:9])
+b91049 &lt;- &quot;B19049&quot;
+
+b25119_defns &lt;- load_variables(2019, &quot;acs5&quot;) %&gt;%
+  filter(str_sub(name, end = 6) %in% b25119) %&gt;%
+  filter(str_detect(name, &quot;PR&quot;) == FALSE)</code></pre>
 </div>
 
 
