@@ -1,0 +1,157 @@
+---
+title: "chas-data"
+author: "Eric Mai"
+date: "1/18/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
+```
+
+## Data Sources
+
+Cost burden data is sourced from HUD's [Comprehensive Housing Affordability Strategy (CHAS)](https://www.huduser.gov/portal/datasets/cp.html) data set. This data set is based on custom tabulations of American Community Survey (ACS) from the U.S. Census Bureau.
+
+CHAS data is used by local governments and advocates to determine the extent of
+housing problems and housing needs(e.g. cost burden, overcrowding, lack of plumbing.
+With this data set, we are able to estimate the number of households that are 
+spending more than 30 percent of their income on housing costs. These estimates can 
+be broken down by tenure (homeowner or renter), Area Median Income, household type, 
+race and ethnicity, and cost of housing.
+
+## Data Collection
+
+CHAS data is collected by downloading the individual zipped packages by year for
+all counties. The following R script downloads these zipped packages for the years
+2012 to 2018 for all counties and then unzips those packages.
+
+The years 2009 to 2011 are available but utilize different data dictionaries, which
+causes issues in variable naming. For this reason, the years 2012 to 2018 are used 
+to avoid complications in merging variables. This timeframe still provides a sufficient
+span of time to make judgements about cost burden trends.
+
+The main tables used are Table 7 (household income and household type), Table 9 
+(race and ethnicity), and Table 18A - 18C (home costs versus income).
+
+```{r Download CHAS data, echo=T, message=FALSE, warning=FALSE, paged.print=FALSE, results='hide'}
+# Load the necessary packages to download the data from the HUD website.
+
+library(tidyverse)
+library(httr)
+library(glue)
+
+# Create an object for the years needed.
+years <- 2012:2018
+
+# Create an object for the geographic level needed. "50" denotes county-level.
+sumlev <- "050"
+
+# create a file folder based on the specified geographic level within the
+# working directory.
+dir.create(glue("{sumlev}"))
+
+# Download and unzip all years to individual folders based on respective years. 
+walk(years, ~{
+  
+  url <- glue("https://www.huduser.gov/PORTAL/datasets/cp/{.x - 4}thru{.x}-{sumlev}-csv.zip")
+  
+  file <- basename(url)
+  
+  path <- file.path(sumlev, file)
+  
+  if (!file.exists(path)) {
+    GET(url, write_disk(path, overwrite = TRUE), progress(type = "down"))
+  }
+  
+  print(glue("Unzipping {.x}..."))
+  unzip(path, exdir = file.path(sumlev, .x))
+  
+})
+```
+
+## Data Prep
+
+The previously downloaded data needs to be merged by table (i.e. Table 7 for all six years needs to be merged together to make for easier analysis). This is done with the following script:
+
+```{r Clean CHAS data, echo=T, message=FALSE, warning=FALSE, paged.print=FALSE, results='hide'}
+
+library(tidyverse)
+library(glue)
+library(readxl)
+library(janitor)
+
+# Years to use
+years <- 2012:2018
+
+# Tables to get
+tables <- c(1:5, 7:13, "14A", "14B", paste0(15, LETTERS[1:3]), 16, "17A", "17B", paste0(18, LETTERS[1:3]))
+
+# tables <- c(7:13, "14A", "14B", paste0(15, LETTERS[1:3]), 16, "17A", "17B", paste0(18, LETTERS[1:3]))
+
+# Go through and write out the various tables
+walk(tables, function(table) {
+  
+  mytable <- purrr::map_df(years, function(year) {
+    
+    # Identify the year-specific folder
+    path <- file.path("050", year)
+    
+    # Find the file - it may be buried so use recursive = TRUE
+    file <- list.files(path, pattern = glue("Table{table}.csv"), recursive = TRUE)
+    
+    # Read in the file quietly
+    raw <- read_csv(file.path(path, file), col_types = cols())
+    
+    # Clean it up
+    cleaned <- raw %>%
+      clean_names() %>%
+      mutate(fips = substr(geoid, 8, 12)) %>%
+      separate(name, into = c("county", "state"), sep = ",") %>%
+      filter(st == "51") %>%
+      pivot_longer(starts_with("T"), 
+                   names_to = "code",
+                   values_to = "value") %>%
+      mutate(id = str_extract(code, "\\d+$"),
+             type = str_extract(code, "est|moe")) %>%
+      select(-code) %>%
+      pivot_wider(names_from = type, values_from = value) %>%
+      rename(Estimate = est, MOE = moe) %>%
+      mutate(Code := glue("T{table}_est{id}"),
+             Year = year) %>%
+      select(Code, Year, Estimate, MOE, everything(), -id)%>%      
+      mutate(fips = case_when(
+        fips == "51515" ~ "51019",
+        TRUE ~ fips
+      )) %>%
+      mutate(county = case_when(
+        county == "Bedford city" ~ "Bedford County",
+        TRUE ~ county
+      ))
+    
+    # Account for different data dictionaries
+    # Find the data dictionary in the appropriate folder
+    dict_path <- list.files(path, pattern = "dictionary", recursive = TRUE, full.names = TRUE) 
+    
+    # Read in the data dictionary and merge
+    dict <- read_excel(dict_path, 
+                       sheet = glue("Table {table}"))
+    
+    cleaned_with_dict <- cleaned %>%
+      left_join(dict, by = c("Code" = "Column Name"))
+    
+    cleaned_with_dict
+    
+  }) 
+  
+  file_name <- glue("Table{table}_2012to2018.csv")
+  
+  message(glue("Writing file {file_name}..."))
+  
+  write_csv(mytable, glue("{file_name}"))
+  
+})
+
+```
+## Data Visualization
+
