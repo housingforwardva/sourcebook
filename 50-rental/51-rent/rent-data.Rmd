@@ -1,0 +1,183 @@
+---
+title: "rent-data"
+author: "Eric Mai"
+date: "2/1/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE )
+```
+
+## Data Sources
+The main data source for rents for renter-occupied housing units is the American
+Community Survey. Table B25063 provides a distribution of rental prices for a
+locality, while Table B25064 provides the median gross rent. 
+
+Gross rent is defined as contract rent plus the estimated average monthly cost of
+utilities such as electricity, gas, and water/sewer and fuels such as oil or kerosene.
+
+Median gross rent is presented in real dollars (dollar value of the corresponding 
+year) and must be adjusted to a consistent dollar value. This is done by utilizing 
+the **Consumer Price Index (CPI)**. CPI is a measure of the average change over 
+time in the prices paid by households for consumer goods. 
+
+While the Census Bureau utilizes CPI-U, CPI for all Urban Consumers, a more accurate 
+CPI is the *Consumer Price Index for All Urban Consumers: Rent of Primary Residence in South*. 
+This data can be sourced from [FRED Economic Data](https://fred.stlouisfed.org/series/CUUR0300SEHA).
+
+Adjustments should be made using an average annual CPI.
+
+## Data Collection
+```{r Download, echo=T, message=FALSE, warning=FALSE, paged.print=FALSE, results='hide'}
+
+# Load the necessary packages to pull data from the Census API.
+library(tidycensus)
+library(tidyverse)
+
+# Create an object for years.
+years <- 2010:2019
+
+# Create object for tables.
+b25063 <- "B25063"
+b25064 <- "B25064"
+
+# Get variables from tables.
+
+b25063_defns <- load_variables(2019, "acs5") %>%
+  filter(str_sub(name, end = 6) == b25063) %>%
+  filter(str_detect(name, "PR") == FALSE)
+
+b25064_defns <- load_variables(2019, "acs5") %>%
+  filter(str_sub(name, end = 6) == b25064) %>%
+  filter(str_detect(name, "PR") == FALSE)
+
+# Clean variables and select only needed columns.
+
+b25063_cleaned <- b25063_defns %>%
+  separate(label, into = c("est", "total", "cash", "rent"), sep = "!!") %>%
+  select(variable = name, cash, rent) %>%
+  mutate(across(.fns = ~replace_na(.x, "All")),
+         across(.fns = ~str_remove_all(.x, ":")))
+
+b25064_cleaned <- b25064_defns %>%
+  separate(label, into = c("est", "medgrossrent"), sep = "!!") %>%
+  select(variable = name, medgrossrent) %>%
+  mutate(across(.fns = ~replace_na(.x, "All")))
+
+# Pull down data from Census API for all localities in Virginia. Note that you 
+# cannot aggregate medians and will need to pull down a state value and CBSA
+# values. 
+
+# Use "metropolitan statistical area/micropolitan statistical area" for geography
+# value when needing CBSA and "state" when needing state value (when using state
+# remove the state = "VA" line)
+
+output_b25063 <- map_dfr(years, function(yr){
+  acs_pull <- get_acs(
+    geography = "county",
+    table = b25063,
+    year = yr,
+    state = "VA"
+  ) %>%
+    left_join(b25063_cleaned, by = "variable")
+  
+  acs_rearranged <- acs_pull %>%
+    mutate(year = yr) %>%
+    select(variable, year, locality = NAME, fips = GEOID, cash, rent, 
+           estimate, moe)
+  
+  acs_rearranged
+})
+
+output_b25064_locality <- map_dfr(years, function(yr){
+  acs_pull <- get_acs(
+    geography = "county",
+    table = b25064,
+    year = yr,
+    state = "VA"
+  ) %>%
+    left_join(b25064_cleaned, by = "variable")
+  
+  acs_rearranged <- acs_pull %>%
+    mutate(year = yr) %>%
+    select(variable, year, locality = NAME, fips = GEOID, medgrossrent, 
+           estimate, moe)
+  
+  acs_rearranged
+})
+
+output_b25064_cbsa <- map_dfr(years, function(yr){
+  acs_pull <- get_acs(
+    geography = "cbsa",
+    table = b25064,
+    year = yr
+  ) %>%
+    left_join(b25064_cleaned, by = "variable")
+  
+  acs_rearranged <- acs_pull %>%
+    mutate(year = yr) %>%
+    select(variable, year, cbsa = NAME, fips = GEOID, medgrossrent, 
+           estimate, moe) %>%
+    filter(str_detect(cbsa, "VA"))
+  
+  acs_rearranged
+})
+
+output_b25064_state <- map_dfr(years, function(yr){
+  acs_pull <- get_acs(
+    geography = "state",
+    table = b25064,
+    year = yr
+  ) %>%
+    left_join(b25064_cleaned, by = "variable")
+  
+  acs_rearranged <- acs_pull %>%
+    mutate(year = yr) %>%
+    select(variable, year, state = NAME, fips = GEOID, medgrossrent, 
+           estimate, moe)
+  
+  acs_rearranged
+})
+
+# Write Table B25063 to csv.
+write_csv(output_b25063, "data/b25063_2010_2019.csv")
+
+```
+
+## Data Prep
+Table B25064 presents median dollar values which is not accurately comparable in
+its given form. To compare median dollar values across time, dollar values must
+be adjusted to a consistent dollar value.
+
+For this purpose, dollar values for years preceding 2019 are adjusted to 2019 
+dollar values. This is done by dividing the average annual CPI for 2019 by the 
+year of the given value, then multiplying by the given value.
+
+$2019 dollars = \frac{CPI_1}{CPI_2} * yeardollars$ 
+
+where
+$CPI_1$ is the average annual CPI for 2019 and
+$CPI_2$ is the average annual CPI for the given year.
+
+
+```{r Prep B25064, echo=T, message=FALSE, warning=FALSE, paged.print=FALSE, results='hide'}
+library(lubridate)
+
+cpi <- read_csv("raw\\CUUR0300SEHA.csv")
+
+cpi$year <- floor_date(cpi$DATE, "year")
+
+cpi <- cpi %>%
+  rename(value = CUUR0300SEHA) %>%
+  transform(value = as.numeric(value))
+
+annual_cpi <- cpi %>%
+  group_by(year) %>%
+  summarize(mean = mean(value))
+
+
+b25064_locality <- output_b25064_locality %>%
+  mutate()
+```
+
