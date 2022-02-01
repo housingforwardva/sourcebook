@@ -291,7 +291,7 @@ output_b25064_state &lt;- map_dfr(years, function(yr){
 })
 
 # Write Table B25063 to csv.
-write_csv(output_b25063, &quot;b25063_2010_2019.csv&quot;)</code></pre>
+write_csv(output_b25063, &quot;data/b25063_2010_2019.csv&quot;)</code></pre>
 </div>
 <div id="data-prep" class="section level2">
 <h2>Data Prep</h2>
@@ -299,7 +299,53 @@ write_csv(output_b25063, &quot;b25063_2010_2019.csv&quot;)</code></pre>
 <p>For this purpose, dollar values for years preceding 2019 are adjusted to 2019 dollar values. This is done by dividing the average annual CPI for 2019 by the year of the given value, then multiplying by the given value.</p>
 <p><span class="math inline">\(2019 dollars = \frac{CPI_1}{CPI_2} * yeardollars\)</span></p>
 <p>where <span class="math inline">\(CPI_1\)</span> is the average annual CPI for 2019 and <span class="math inline">\(CPI_2\)</span> is the average annual CPI for the given year.</p>
-<p>Example:</p>
+<pre class="r"><code># The lubridate package allows us to easily work with date fields that exist in the
+# CPI data file.
+library(lubridate)
+
+# Load the raw csv data file of CPI values by month for rent of primary residence in
+# the South.
+cpi &lt;- read_csv(&quot;raw\\CUUR0300SEHA.csv&quot;)
+
+# Create a column based on the year of CPI value.
+cpi$year &lt;- floor_date(cpi$DATE, &quot;year&quot;)
+
+# Rename columns and ensure that CPI value is a numeric value.
+cpi &lt;- cpi %&gt;%
+  rename(cpi_value = CUUR0300SEHA) %&gt;%
+  transform(cpi_value = as.numeric(cpi_value))
+
+# Summarize CPI by year to get average annual CPI. 
+annual_cpi &lt;- cpi %&gt;%
+  group_by(year) %&gt;%
+  summarize(mean = mean(cpi_value))%&gt;%
+  mutate(year = as.integer(substring(year, 1,4)))
+
+# Join B25064 tables to the Annual CPI table based on year and then create a 
+# column for 2019 dollar value (dollars19) that utilizes the formula above.
+
+# The average annual CPI for 2019 is 295.1968.
+
+b25064_locality &lt;- output_b25064_locality %&gt;%
+  left_join(annual_cpi, by = &#39;year&#39;) %&gt;%
+  rename(cpi = mean) %&gt;%
+  mutate(dollars19 = ((295.1968/cpi)*estimate))
+
+b25064_cbsa &lt;- output_b25064_cbsa %&gt;%
+  left_join(annual_cpi, by = &#39;year&#39;) %&gt;%
+  rename(cpi = mean) %&gt;%
+  mutate(dollars19 = ((295.1968/cpi)*estimate))
+
+b25064_state &lt;- output_b25064_state %&gt;%
+  left_join(annual_cpi, by = &#39;year&#39;) %&gt;%
+  rename(cpi = mean) %&gt;%
+  mutate(dollars19 = ((295.1968/cpi)*estimate))
+
+# Write to csv files.
+
+write_csv(b25064_locality, &quot;data/b25064_locality.csv&quot;)
+write_csv(b25064_cbsa, &quot;data/b25064_cbsa.csv&quot;)
+write_csv(b25064_state, &quot;data/b25064_state.csv&quot;)</code></pre>
 </div>
 
 

@@ -162,22 +162,53 @@ $CPI_2$ is the average annual CPI for the given year.
 
 
 ```{r Prep B25064, echo=T, message=FALSE, warning=FALSE, paged.print=FALSE, results='hide'}
+# The lubridate package allows us to easily work with date fields that exist in the
+# CPI data file.
 library(lubridate)
 
+# Load the raw csv data file of CPI values by month for rent of primary residence in
+# the South.
 cpi <- read_csv("raw\\CUUR0300SEHA.csv")
 
+# Create a column based on the year of CPI value.
 cpi$year <- floor_date(cpi$DATE, "year")
 
+# Rename columns and ensure that CPI value is a numeric value.
 cpi <- cpi %>%
-  rename(value = CUUR0300SEHA) %>%
-  transform(value = as.numeric(value))
+  rename(cpi_value = CUUR0300SEHA) %>%
+  transform(cpi_value = as.numeric(cpi_value))
 
+# Summarize CPI by year to get average annual CPI. 
 annual_cpi <- cpi %>%
   group_by(year) %>%
-  summarize(mean = mean(value))
+  summarize(mean = mean(cpi_value))%>%
+  mutate(year = as.integer(substring(year, 1,4)))
 
+# Join B25064 tables to the Annual CPI table based on year and then create a 
+# column for 2019 dollar value (dollars19) that utilizes the formula above.
+
+# The average annual CPI for 2019 is 295.1968.
 
 b25064_locality <- output_b25064_locality %>%
-  mutate()
+  left_join(annual_cpi, by = 'year') %>%
+  rename(cpi = mean) %>%
+  mutate(dollars19 = ((295.1968/cpi)*estimate))
+
+b25064_cbsa <- output_b25064_cbsa %>%
+  left_join(annual_cpi, by = 'year') %>%
+  rename(cpi = mean) %>%
+  mutate(dollars19 = ((295.1968/cpi)*estimate))
+
+b25064_state <- output_b25064_state %>%
+  left_join(annual_cpi, by = 'year') %>%
+  rename(cpi = mean) %>%
+  mutate(dollars19 = ((295.1968/cpi)*estimate))
+
+# Write to csv files.
+
+write_csv(b25064_locality, "data/b25064_locality.csv")
+write_csv(b25064_cbsa, "data/b25064_cbsa.csv")
+write_csv(b25064_state, "data/b25064_state.csv")
+
 ```
 
