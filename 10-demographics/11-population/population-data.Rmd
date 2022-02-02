@@ -3,39 +3,80 @@ title: "population-data"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
 ## Data sources
 
 *Names, links, and short descriptions of data sources used.*
 
-Census Population Estimates Program (PEP) is the main data source for this data
-point.
+### Census Population Estimates Program (PEP)
 
-Additional line of text. HERE AND HERE.
+Annual estimates of total population released by the U.S. Census Bureau. Available at locality level. Estimates by age, race, and ethnicity also available.
 
-Eric is adding a line here.
+Link: https://www.census.gov/programs-surveys/popest.html
 
-JTK is adding his own line to commit to the branch here.
+### Weldon Cooper Center for Public Service
 
-HELLO WORLD
+Official population projections produced by the Cooper Center Demographics Research Group at the University of Virginia. Current projections available at the locality level for 2030 and 2040. New projections based on 2020 Census (for 2030 to 2050) expected by July 1, 2022.
+
+Link: https://demographics.coopercenter.org/virginia-population-projections
+
+## Setup
+
+*Load packages and set global chunk options.*
+
+```{r setup, message=FALSE, warning=FALSE}
+
+library(tidycensus)
+library(tidyverse)
+library(knitr)
+library(janitor)
+
+knitr::opts_chunk$set(echo=TRUE, message=FALSE, warning=FALSE)
+
+```
 
 ## Data collection
 
 *Code and annotations for collecting data via API, scraping, or manual/direct process.*
 
+### Collect PEP data from Census API via tidycensus
+
+```{r pep-collect}
+
+# Download PEP data from Census API via tidycensus
+# Collects total population estimates for each locality in Virginia from 2010 to 2019
+
+pep_raw <- get_estimates(
+  geography = "county",
+  state = "VA",
+  product = "population",
+  year = 2019,
+  time_series = TRUE
+)
+
+```
+
 ## Data prep
 
 *Code and annotations for manipulating raw data to be used in dashboards.*
+
+```{r pep-prep}
+
+# pep_data
+
+```
 
 ## Data export
 
 *Code and annotations for exporting and saving data.*
 
+```{r pep-export}
+
+# pep_export
+
+```
+
 ## Dashboard development
 
 *Code and annotations for designing and deploying dashboard(s) in Shiny.*
 
-
+n/a
