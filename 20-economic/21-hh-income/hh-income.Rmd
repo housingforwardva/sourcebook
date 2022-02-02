@@ -44,7 +44,7 @@ better comparisons. For more information on this, please see
 
 
 ## Data Collection
-```{r Download Median Household Tables, echo = T, message=FALSE, warning=FALSE, paged.print=FALSE, results='hide'}
+```{r Download Median Household Tables, echo=T, message=FALSE, warning=FALSE, paged.print=FALSE, results='hide'}
 
 # Load necessary libraries to pull data.
 library(tidyverse)
@@ -63,6 +63,31 @@ b91049 <- "B19049"
 b25119_defns <- load_variables(2019, "acs5") %>%
   filter(str_sub(name, end = 6) %in% b25119) %>%
   filter(str_detect(name, "PR") == FALSE)
+
+b25119_cleaned <- b25119_defns %>%
+  separate(label, c("estimate", "medianhhincome", "total", "tenure"), sep = "!!") %>%
+  select(variable = name, medianhhincome, tenure) %>%
+  mutate(across(.fns = ~replace_na(.x, "All")),
+         across(.fns = ~str_remove_all(.x, ":")),
+         across(.fns = ~str_remove_all(.x, " in the past 12 months \\(\\in 2019 inflation-adjusted dollars\\)\\ --")))
+
+output_b25119 <- map_dfr(years, function(yr){
+  acs_pull <- get_acs(
+    geography = "county",
+    table = b25119,
+    survey = "acs1",
+    year = yr,
+    state = "VA"
+  ) %>%
+    left_join(b25119_cleaned, by = "variable")
+  
+  acs_rearranged <- acs_pull %>%
+    mutate(year = yr) %>%
+    select(variable, year, locality = NAME, fips = GEOID, tenure,
+           estimate, moe)
+  
+  acs_rearranged
+  })
 ```
 
   
