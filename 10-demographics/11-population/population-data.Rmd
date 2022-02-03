@@ -1,29 +1,41 @@
 ---
-title: "population-data"
-output: html_document
+title: "Sourcebook > Demographics > Population"
+subtitle: "Data sources and methods"
+author: "HousingForward Virginia"
+date: "Updated on `r Sys.Date()`"
+output:
+  html_document:
+    theme: lumen
+    toc: true
+    toc_float: true
+    number_sections: true
 ---
 
-## Data sources
+# Data sources
 
-*Names, links, and short descriptions of data sources used.*
+### Census Population Estimates Program (PEP) {-}
 
-### Census Population Estimates Program (PEP)
-
-Annual estimates of total population released by the U.S. Census Bureau. Available at locality level. Estimates by age, race, and ethnicity also available.
+Annual estimates of total population released by the U.S. Census Bureau. Available at locality level from 2010 to 2019. Estimates by age, race, and ethnicity also available, along with components of population change.
 
 Link: https://www.census.gov/programs-surveys/popest.html
 
-### Weldon Cooper Center for Public Service
+### 2020 Decennial Census {-}
+
+Initial data from the 2020 Decennial Census is available in the PL 94-171 Redistricting summary file. As of February 2022, we use this data to append 2020 population counts onto the PEP time series data through 2019. Complete 2010 to 2020 Intercensal Estimates will be published in late 2022.
+
+Link: https://www.census.gov/programs-surveys/decennial-census/about/rdo/summary-files.html
+
+### Weldon Cooper Center for Public Service {-}
 
 Official population projections produced by the Cooper Center Demographics Research Group at the University of Virginia. Current projections available at the locality level for 2030 and 2040. New projections based on 2020 Census (for 2030 to 2050) expected by July 1, 2022.
 
 Link: https://demographics.coopercenter.org/virginia-population-projections
 
-## Setup
-
-*Load packages and set global chunk options.*
+# Setup
 
 ```{r setup, message=FALSE, warning=FALSE}
+
+# Load packages and set global chunk options
 
 library(tidycensus)
 library(tidyverse)
@@ -34,49 +46,133 @@ knitr::opts_chunk$set(echo=TRUE, message=FALSE, warning=FALSE)
 
 ```
 
-## Data collection
+# Data collection
 
-*Code and annotations for collecting data via API, scraping, or manual/direct process.*
+```{r pop-collect}
 
-### Collect PEP data from Census API via tidycensus
+# Download total population counts from PEP for each Virginia locality from 2010 to 2019
 
-```{r pep-collect}
-
-# Download PEP data from Census API via tidycensus
-# Collects total population estimates for each locality in Virginia from 2010 to 2019
-
-pep_raw <- get_estimates(
+pep_total_raw <- get_estimates(
   geography = "county",
   state = "VA",
-  product = "population",
+  variables = "POP",
   year = 2019,
   time_series = TRUE
 )
 
+# Download components of population change from PEP for each Virginia locality from 2010 to 2019
+
+pep_change_raw <- get_estimates(
+  geography = "county",
+  state = "VA",
+  variables = c("NATURALINC", "DOMESTICMIG", "INTERNATIONALMIG"),
+  year = 2019,
+  time_series = TRUE
+)
+
+# Download total population counts from 2020 Census summary file for each Virginia locality
+
+census_raw <- get_decennial(
+  geography = "county",
+  state = "VA",
+  year = 2020,
+  sumfile = "pl",
+  variables = "P1_001N"
+)
+
 ```
 
-## Data prep
+# Data prep
 
-*Code and annotations for manipulating raw data to be used in dashboards.*
+```{r pop-prep}
 
-```{r pep-prep}
+# Prep total population counts from PEP
 
-# pep_data
+pep_total_clean <- pep_total_raw %>%
+  filter(!DATE %in% c(2, 3)) %>% # Remove non-decennial 2010 counts
+  mutate(year = # Translate date codes into years
+    case_when(
+      DATE == 1 ~ "2010",
+      DATE == 4 ~ "2011",
+      DATE == 5 ~ "2012",
+      DATE == 6 ~ "2013",
+      DATE == 7 ~ "2014",
+      DATE == 8 ~ "2015",
+      DATE == 9 ~ "2016",
+      DATE == 10 ~ "2017",
+      DATE == 11 ~ "2018",
+      DATE == 12 ~ "2019")) %>% 
+  mutate(counttype = # Add descriptions to count types
+      case_when(
+        DATE == 1 ~ "Census population",
+        TRUE ~ "Population estimate")) %>% 
+  select( # Simplify columns
+    GEOID,
+    year,
+    counttype,
+    value
+  )
+
+# Prep total population counts from 2020 Census summary file
+
+census_clean <- census_raw %>% 
+  mutate(year = "2020", # Add year and count type columns
+         counttype = "Census population") %>%
+  select( # Simplify columns
+    GEOID,
+    year,
+    counttype,
+    value
+  )
+
+# Append 2020 Census counts to PEP time series
+
+population_data <- pep_total_clean %>% 
+  bind_rows(census_clean)
+
+# Prep components of population change from PEP
+
+pep_change_clean <- pep_change_raw %>% 
+  mutate(year = # Translate date codes into years
+    case_when(
+      PERIOD == 1 ~ "2010",
+      PERIOD == 2 ~ "2011",
+      PERIOD == 3 ~ "2012",
+      PERIOD == 4 ~ "2013",
+      PERIOD == 5 ~ "2014",
+      PERIOD == 6 ~ "2015",
+      PERIOD == 7 ~ "2016",
+      PERIOD == 8 ~ "2017",
+      PERIOD == 9 ~ "2018",
+      PERIOD == 10 ~ "2019")) %>%
+  mutate(component = # Rename components of change
+    case_when(
+      variable == "NATURALINC" ~ "Natural increase",
+      variable == "DOMESTICMIG" ~ "Domestic migration",
+      variable == "INTERNATIONALMIG" ~ "International migration")) %>% 
+  select( # Simplify columns
+    GEOID,
+    year,
+    component,
+    value
+  )
 
 ```
 
-## Data export
+# Data export
 
-*Code and annotations for exporting and saving data.*
+```{r pop-export}
 
-```{r pep-export}
+# Save total population counts
 
-# pep_export
+write_csv(population_data, "data/pop-total.csv")
+
+# Save components of population change
+
+write_csv(pep_change_clean, "data/pop-components.csv")
 
 ```
 
-## Dashboard development
+# Dashboard development
 
-*Code and annotations for designing and deploying dashboard(s) in Shiny.*
-
-n/a
+Reserved for future Shiny app development.
