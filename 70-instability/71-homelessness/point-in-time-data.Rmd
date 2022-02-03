@@ -9,20 +9,42 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 ```
 ## Data Sources
+The U.S. Department of Housing and Urban Development requires that Continuums of
+Care conduct an annual count of people experiencing homelessness who are sheltered
+in an emergency shelter, transitional housing, and Safe Havens on a single night.
+In addition, CoCs must also count unsheltered people experiencing homelessness every
+other year (odd numbered years). These counts are referred to the Point-in-Time (PIT)
+count.
+
+HUD's definition of homelessness includes four broad categories:
+
+*People who are living in a place not meant for human habitation, in emergency shelter, in transitional housing, or are exiting an institution where they temporarily resided. The only significant change from existing practice is that people will be considered homeless if they are exiting an institution where they resided for up to 90 days (it was previously 30 days), and were in shelter or a place not meant for human habitation immediately prior to entering that institution.
+*People who are losing their primary nighttime residence, which may include a motel or hotel or a doubled up situation, within 14 days and lack resources or support networks to remain in housing. HUD had previously allowed people who were being displaced within 7 days to be considered homeless. The proposed regulation also describes specific documentation requirements for this category.
+*Families with children or unaccompanied youth who are unstably housed and likely to continue in that state. This is a new category of homelessness, and it applies to families with children or unaccompanied youth who have not had a lease or ownership interest in a housing unit in the last 60 or more days, have had two or more moves in the last 60 days, and who are likely to continue to be unstably housed because of disability or multiple barriers to employment.
+*People who are fleeing or attempting to flee domestic violence, have no other residence, and lack the resources or support networks to obtain other permanent housing. This category is similar to the current practice regarding people who are fleeing domestic violence.
 
 
 
 ## Data Collection
 
 ```{r}
+
+# Load necessary packages to work with Excel file and clean it.
 library(readxl)
 library(janitor)
 library(tidyverse)
 
-# An example iteration workflow
+# Create an object for years in character format. This is used to account for 
+# sheets in the Excel file and then combine later.
+
 years <- as.character(2007:2020)
 
+# Create an object for the file path of the Excel file.
+
 path <- "raw/2007-2020-PIT-Estimates-by-CoC.xlsx"
+
+# Create a function to read through each sheet and then combine them into a single
+# dataframe.
 
 full_set <- map_dfr(years, function(yr) {
   
@@ -42,13 +64,29 @@ full_set <- map_dfr(years, function(yr) {
   
 })
 
-# An alternative approach, with a "category" column to reduce the large number of columns:
-full_set_longer <- full_set %>%
+# Filter the dataframe for only Virginia CoCs.
+
+va_set <- full_set %>%
+  filter(str_detect(co_c_number,'VA'))
+
+```
+
+# Data Preparation
+The data is pivoted from wide to long to make for easier analysis. However, the 
+current labels will require some parsing to create additional columns.
+```{r}
+# The way the dataframe is presented has too many columns for the same data values.
+# Therefore it would be best to pivot the dataframe to have a category column.
+
+va_set_longer <- va_set %>% 
   pivot_longer(
     cols = overall_homeless:unsheltered_homeless_parenting_youth_under_25_multiple_races, 
     names_to = "category",
     values_to = "value"
   )
-```
 
+# write the file to csv.
+
+write_csv(va_set_longer, "data/va_pit_2007_2020.csv")
+```
 
