@@ -1,0 +1,54 @@
+---
+title: "point-in-time"
+author: "Eric Mai"
+date: "2/3/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
+```
+## Data Sources
+
+
+
+## Data Collection
+
+```{r}
+library(readxl)
+library(janitor)
+library(tidyverse)
+
+# An example iteration workflow
+years <- as.character(2007:2020)
+
+path <- "raw/2007-2020-PIT-Estimates-by-CoC.xlsx"
+
+full_set <- map_dfr(years, function(yr) {
+  
+  # Read in the dataset
+  pit_set <- read_excel(path, sheet = yr) %>%
+    clean_names()
+  
+  # Remove the year suffix from the column names
+  suffix_to_remove <- paste0("_", yr)
+  
+  pit_renamed <- pit_set %>%
+    rename_with(~str_remove(.x, suffix_to_remove)) %>%
+    mutate(year = yr) %>%
+    select(co_c_number:co_c_name, year, everything())
+  
+  pit_renamed
+  
+})
+
+# An alternative approach, with a "category" column to reduce the large number of columns:
+full_set_longer <- full_set %>%
+  pivot_longer(
+    cols = overall_homeless:unsheltered_homeless_parenting_youth_under_25_multiple_races, 
+    names_to = "category",
+    values_to = "value"
+  )
+```
+
+
