@@ -191,26 +191,36 @@ virginia &lt;- list_counties(&quot;VA&quot;)
 # mutate() function creates a new column called &#39;seriesid&#39; while the paste0() function
 # concatenates the necessary pieces of the series id without spaces.
 
-virginia &lt;- virginia %&gt;% mutate(seriesid = paste0(&quot;LAUCN51&quot;, county_code, &quot;0000000005&quot;),
-                                unemploymentseries = paste0(&quot;LAUCN51&quot;, county_code, &quot;0000000003&quot;))
+virginia &lt;- virginia %&gt;% mutate(seriesid = paste0(&quot;LAUCN51&quot;, county_code, &quot;0000000005&quot;), #employment
+                                rateseries = paste0(&quot;LAUCN51&quot;, county_code, &quot;0000000003&quot;), #unemployment rate
+                                lfseries = paste0(&quot;LAUCN51&quot;, county_code, &quot;0000000006&quot;), #labor force
+                                unemployedseries = paste0(&quot;LAUCN51&quot;, county_code, &quot;0000000004&quot;) # unemployment
+                                )
 
 # Only the &#39;seriesid&#39; field is needed to pull from the BLS API, therefore we need to
 # create a list of series ids for all 136 Virginia localities. 
 
 list &lt;- list(virginia$seriesid)
-unemploymentlist &lt;- list(virginia$unemploymentseries)
+ratelist &lt;- list(virginia$rateseries)
+lflist &lt;- list(virginia$lfseries)
+unemploymentlist &lt;- list(virginia$unemployedseries)
 
 # The blscrapeR does not accept a list in its query pull and requires a vector. Therefore, 
 # unlist() is used in order to simplifies the list to a vector.
 
 list &lt;- unlist(list)   
+ratelist &lt;- unlist(ratelist)
+lflist &lt;- unlist(lflist)
 unemploymentlist &lt;- unlist(unemploymentlist)
 
 # The BLS API has a series query limit of 50, but there are 136 localities (series ids)
 # to pull. So we need to split the vector into chunks using the split() function.
 
 list &lt;- split(list, ceiling(seq_along(list)/50))
+ratelist &lt;- split(ratelist, ceiling(seq_along(ratelist)/50))
+lflist &lt;- split(lflist, ceiling(seq_along(lflist)/50))
 unemploymentlist &lt;- split(unemploymentlist, ceiling(seq_along(unemploymentlist)/50))
+
 
 # A function is needed that will run through the bls_api() using the chunked vector we
 # created previously. This function will be utilized in map_dfr() to combine the three 
@@ -224,25 +234,55 @@ bls_employment_pull &lt;- function(list){
 
 va_employed &lt;- map_dfr(list, bls_employment_pull)
 
+bls_unemployment_rate_pull &lt;- function(ratelist){
+  bls_api(ratelist,
+          startyear = 2008, endyear = 2022, Sys.getenv(&quot;BLS_KEY&quot;)) %&gt;%
+    dateCast()
+}
+
+va_unemployment_rate &lt;- map_dfr(ratelist, bls_unemployment_rate_pull)
+
+bls_laborforce_pull &lt;- function(lflist){
+  bls_api(lflist,
+          startyear = 2008, endyear = 2022, Sys.getenv(&quot;BLS_KEY&quot;)) %&gt;%
+    dateCast()
+}
+
+va_laborforce &lt;- map_dfr(lflist, bls_laborforce_pull)
+
 bls_unemployment_pull &lt;- function(unemploymentlist){
   bls_api(unemploymentlist,
           startyear = 2008, endyear = 2022, Sys.getenv(&quot;BLS_KEY&quot;)) %&gt;%
     dateCast()
 }
 
-va_unemployed &lt;- map_dfr(unemploymentlist, bls_unemployment_pull)
+va_unemployment &lt;- map_dfr(unemploymentlist, bls_unemployment_pull)
+
+
 
 # Now that a data frame is created with all localities and years needed, we need to create
 # an additional column for the FIPS code of each locality, so that we can join to a table 
 # of locality names later.
 
-va_employed &lt;- va_employed %&gt;% mutate(fips = substr(seriesID, 6, 10))
-va_unemployed &lt;- va_unemployed %&gt;% mutate(fips = substr(seriesID, 6, 10))
+fip_function &lt;- function(x) {
+  x %&gt;%
+    mutate(fips = substr(seriesID, 6, 10))
+}
+
+result &lt;- list(va_employed, va_unemployment_rate, va_laborforce, va_unemployment) %&gt;% 
+  lapply(fip_function)
+
+names(result) = c(&#39;va_employed&#39;, &#39;va_unemployment_rate&#39;, &#39;va_laborforce&#39;, &#39;va_unemployment&#39;)
+
+list2env(result, envir = .GlobalEnv)
+
 
 # Write to csv file.
 
 write_csv(va_employed, &quot;data/va_employment_2008_2021.csv&quot;)
-write_csv(va_unemployed, &quot;data/va_unemployed_2008_2021.csv&quot;)</code></pre>
+write_csv(va_unemployment_rate, &quot;data/va_unemployment_rate_2008_2021.csv&quot;)
+write_csv(va_laborforce, &quot;data/va_laborforce_2008_2021.csv&quot;)
+write_csv(va_unemployment, &quot;data/va_unemployment_2008_2021.csv&quot;)</code></pre>
 </div>
 
 
