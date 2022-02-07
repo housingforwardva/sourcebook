@@ -201,11 +201,276 @@ years &lt;- 2010:2019
 
 b25119 &lt;- &quot;B25119&quot;
 b19013 &lt;- paste0(&quot;B19013&quot;, LETTERS[2:9])
-b91049 &lt;- &quot;B19049&quot;
+b19049 &lt;- &quot;B19049&quot;
+b25118 &lt;- &quot;B25118&quot;
 
+# Get variables for Table B25119 and clean the variables.
 b25119_defns &lt;- load_variables(2019, &quot;acs5&quot;) %&gt;%
   filter(str_sub(name, end = 6) %in% b25119) %&gt;%
-  filter(str_detect(name, &quot;PR&quot;) == FALSE)</code></pre>
+  filter(str_detect(name, &quot;PR&quot;) == FALSE)
+
+b25119_cleaned &lt;- b25119_defns %&gt;%
+  separate(label, c(&quot;estimate&quot;, &quot;medianhhincome&quot;, &quot;total&quot;, &quot;tenure&quot;), sep = &quot;!!&quot;) %&gt;%
+  select(variable = name, medianhhincome, tenure) %&gt;%
+  mutate(across(.fns = ~replace_na(.x, &quot;All&quot;)),
+         across(.fns = ~str_remove_all(.x, &quot;:&quot;)),
+         across(.fns = ~str_remove_all(.x, &quot; in the past 12 months \\(\\in 2019 inflation-adjusted dollars\\)\\ --&quot;)))
+
+# Get variables for Table B19013, then create a function to pull race or ethnicity
+# from the variables. 
+b19013_defns &lt;- load_variables(2019, &quot;acs5&quot;) %&gt;%
+  filter(str_sub(name, end = 7) %in% b19013) %&gt;%
+  filter(str_detect(name, &quot;PR&quot;) == FALSE)
+
+concept_to_race &lt;- function(x) {
+  out &lt;- x %&gt;%
+    str_remove_all(&quot;MEDIAN HOUSEHOLD INCOME IN THE PAST 12 MONTHS \\(\\IN 2019 INFLATION-ADJUSTED DOLLARS\\)\\ \\(|\\)&quot;) %&gt;%
+    str_to_title()
+}
+
+# Clean up the variables and create a column for race.
+b19013_cleaned &lt;- b19013_defns %&gt;%
+  mutate(race = concept_to_race(concept)) %&gt;%
+  separate(label, c(&quot;estimate&quot;, &quot;medhhincome&quot;), sep = &quot;!!&quot;) %&gt;%
+  select(variable = name, medhhincome, race) %&gt;%
+  mutate(across(.fns = ~replace_na(.x, &quot;All&quot;)),
+          across(.fns = ~str_remove_all(.x, &quot;:&quot;)))
+
+
+# Get variables for Table B19049 and clean the variables.
+b19049_defns &lt;- load_variables(2019, &quot;acs5&quot;) %&gt;%
+  filter(str_sub(name, end = 6) %in% b19049) %&gt;%
+  filter(str_detect(name, &quot;PR&quot;) == FALSE)
+
+b19049_cleaned &lt;- b19049_defns %&gt;%
+  separate(label, c(&quot;estimate&quot;, &quot;medhhincome&quot;, &quot;total&quot;, &quot;age&quot;), sep = &quot;!!&quot;) %&gt;%
+  select(variable = name, medhhincome, age) %&gt;%
+  mutate(across(.fns = ~replace_na(.x, &quot;All&quot;)),
+         across(.fns = ~str_remove_all(.x, &quot;:&quot;)),
+         across(.fns =~ str_remove_all(.x, &quot;in the past 12 months \\(\\in 2019 inflation-adjusted dollars\\)\\ --&quot;)))
+
+# Get variables for Table B25118 and clean the variables. 
+b25118_defns &lt;- load_variables(2019, &quot;acs5&quot;) %&gt;%
+  filter(str_sub(name, end = 6) %in% b25118) %&gt;%
+  filter(str_detect(name, &quot;PR&quot;) == FALSE)
+
+b25118_cleaned &lt;- b25118_defns %&gt;%
+  separate(label, c(&quot;estimate&quot;, &quot;total&quot;, &quot;tenure&quot;, &quot;income&quot;), sep = &quot;!!&quot;) %&gt;%
+  select(variable = name, tenure, income) %&gt;%
+  mutate(across(.fns = ~replace_na(.x, &quot;All&quot;)),
+         across(.fns = ~str_remove_all(.x, &quot;:&quot;)))
+
+
+# Pull data from Census API. You cannot aggregate medians so for the median tables
+# you will need to pull data for the state, CBSA, and locality. For now we will just
+# pull 5-year estimates and deal with 1-year estimates in 2.0.0.
+
+
+# Table B25119 - Median Household Income by Tenure
+
+output_b25119_locality &lt;- map_dfr(years, function(yr){
+  acs_pull &lt;- get_acs(
+    geography = &quot;county&quot;,
+    table = b25119,
+    survey = &quot;acs5&quot;,
+    year = yr,
+    state = &quot;VA&quot;
+  ) %&gt;%
+    left_join(b25119_cleaned, by = &quot;variable&quot;)
+  
+  acs_rearranged &lt;- acs_pull %&gt;%
+    mutate(year = yr) %&gt;%
+    select(variable, year, locality = NAME, fips = GEOID, tenure,
+           estimate, moe)
+  
+  acs_rearranged
+  })
+
+output_b25119_cbsa &lt;- map_dfr(years, function(yr){
+  acs_pull &lt;- get_acs(
+    geography = &quot;metropolitan statistical area/micropolitan statistical area&quot;,
+    table = b25119,
+    survey = &quot;acs5&quot;,
+    year = yr
+  ) %&gt;%
+    left_join(b25119_cleaned, by = &quot;variable&quot;)
+  
+  acs_rearranged &lt;- acs_pull %&gt;%
+    mutate(year = yr) %&gt;%
+    select(variable, year, CBSA = NAME, fips = GEOID, tenure,
+           estimate, moe) %&gt;%
+    filter(str_detect(CBSA, &quot;VA&quot;))
+  
+  acs_rearranged
+  })
+
+output_b25119_state &lt;- map_dfr(years, function(yr){
+  acs_pull &lt;- get_acs(
+    geography = &quot;state&quot;,
+    table = b25119,
+    survey = &quot;acs5&quot;,
+    year = yr
+  ) %&gt;%
+    left_join(b25119_cleaned, by = &quot;variable&quot;)
+  
+  acs_rearranged &lt;- acs_pull %&gt;%
+    mutate(year = yr) %&gt;%
+    select(variable, year, state = NAME, fips = GEOID, tenure,
+           estimate, moe)
+  
+  acs_rearranged
+  })
+
+# Table B19013 - Median Household Income by Race and Ethnicity
+
+output_b19013_locality &lt;- map_dfr(b19013, function(tb) {
+  yearly_data &lt;- map_dfr(years, function(yr) {
+    
+    acs_pull &lt;- get_acs(
+      geography = &quot;county&quot;,
+      table = tb,
+      year = yr,
+      state = &quot;VA&quot;
+    ) %&gt;%
+    left_join(b19013_cleaned, by = &quot;variable&quot;)
+    
+    acs_rearranged &lt;- acs_pull %&gt;%
+      mutate(year = yr) %&gt;%
+      select(variable, year, locality = NAME, fips = GEOID, race, medhhincome,
+             estimate, moe)
+    
+    acs_rearranged
+  })
+  yearly_data
+})
+
+output_b19013_cbsa &lt;- map_dfr(b19013, function(tb) {
+  yearly_data &lt;- map_dfr(years, function(yr) {
+    
+    acs_pull &lt;- get_acs(
+      geography = &quot;metropolitan statistical area/micropolitan statistical area&quot;,
+      table = tb,
+      year = yr
+    ) %&gt;%
+    left_join(b19013_cleaned, by = &quot;variable&quot;)
+    
+    acs_rearranged &lt;- acs_pull %&gt;%
+      mutate(year = yr) %&gt;%
+      select(variable, year, CBSA = NAME, fips = GEOID, race, medhhincome,
+             estimate, moe) %&gt;%
+      filter(str_detect(CBSA, &quot;VA&quot;))
+    
+    acs_rearranged
+  })
+  yearly_data
+})
+
+output_b19013_state &lt;- map_dfr(b19013, function(tb) {
+  yearly_data &lt;- map_dfr(years, function(yr) {
+    
+    acs_pull &lt;- get_acs(
+      geography = &quot;state&quot;,
+      table = tb,
+      year = yr
+    ) %&gt;%
+    left_join(b19013_cleaned, by = &quot;variable&quot;)
+    
+    acs_rearranged &lt;- acs_pull %&gt;%
+      mutate(year = yr) %&gt;%
+      select(variable, year, state = NAME, fips = GEOID, race, medhhincome,
+             estimate, moe)
+    
+    acs_rearranged
+  })
+  yearly_data
+})
+
+
+# Table B19049 - Median Household Income by Age of Householder
+output_b19049_locality &lt;- map_dfr(years, function(yr) {
+    acs_pull &lt;- get_acs(
+      geography = &quot;county&quot;,
+      table = b19049,
+      year = yr
+    ) %&gt;%
+    left_join(b19049_cleaned, by = &quot;variable&quot;)
+    
+    acs_rearranged &lt;- acs_pull %&gt;%
+      mutate(year = yr) %&gt;%
+      select(variable, year, locality = NAME, fips = GEOID, medhhincome, age,
+             estimate, moe)
+    
+    acs_rearranged
+  })
+
+
+output_b19049_cbsa &lt;- map_dfr(years, function(yr) {
+    acs_pull &lt;- get_acs(
+      geography = &quot;metropolitan statistical area/micropolitan statistical area&quot;,
+      table = b19049,
+      year = yr
+    ) %&gt;%
+    left_join(b19049_cleaned, by = &quot;variable&quot;)
+    
+    acs_rearranged &lt;- acs_pull %&gt;%
+      mutate(year = yr) %&gt;%
+      select(variable, year, CBSA = NAME, fips = GEOID, medhhincome, age,
+             estimate, moe) %&gt;%
+      filter(str_detect(CBSA, &quot;VA&quot;))
+    
+    acs_rearranged
+  })
+
+output_b19049_state &lt;- map_dfr(years, function(yr) {
+    acs_pull &lt;- get_acs(
+      geography = &quot;state&quot;,
+      table = b19049,
+      year = yr
+    ) %&gt;%
+    left_join(b19049_cleaned, by = &quot;variable&quot;)
+    
+    acs_rearranged &lt;- acs_pull %&gt;%
+      mutate(year = yr) %&gt;%
+      select(variable, year, state = NAME, fips = GEOID, medhhincome, age,
+             estimate, moe)
+    
+    acs_rearranged
+  })
+
+# Table B25118 - Tenure by Household Income
+# This pull will only be for 5-year estimates for all versions because it represents
+# a distribution of incomes at a given point in time. This datapoint can also be aggregated
+# because it is a count of households and not a summary measure.
+
+output_b25118 &lt;- map_dfr(years, function(yr) {
+  acs_pull &lt;- get_acs(
+    geography = &quot;county&quot;,
+    table = b25118,
+    year = yr,
+    state = &quot;VA&quot;
+  ) %&gt;%
+    left_join(b25118_cleaned, by = &quot;variable&quot;)
+  
+  acs_rearranged &lt;- acs_pull %&gt;%
+    mutate(year = yr) %&gt;%
+    select(variable, year, locality = NAME, fips = GEOID, tenure, income,
+           estimate, moe)
+  
+  acs_rearranged
+})
+
+# Write all data to csv.
+
+write_csv(output_b25119_locality, &quot;data/b25119_locality.csv&quot;)
+write_csv(output_b25119_cbsa, &quot;data/b25119_cbsa.csv&quot;)
+write_csv(output_b25119_state, &quot;data/b25119_state.csv&quot;)
+write_csv(output_b19013_locality, &quot;data/b19013_locality.csv&quot;)
+write_csv(output_b19013_cbsa, &quot;data/b19013_cbsa.csv&quot;)
+write_csv(output_b19013_state, &quot;data/b19013_state.csv&quot;)
+write_csv(output_b19049_locality, &quot;data/b19049_locality.csv&quot;)
+write_csv(output_b19049_cbsa, &quot;data/b19049_cbsa.csv&quot;)
+write_csv(output_b19049_state, &quot;data/b19049_state.csv&quot;)
+write_csv(output_b25118, &quot;data/b25118.csv&quot;)</code></pre>
 </div>
 
 

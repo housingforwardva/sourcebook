@@ -58,8 +58,10 @@ years <- 2010:2019
 
 b25119 <- "B25119"
 b19013 <- paste0("B19013", LETTERS[2:9])
-b91049 <- "B19049"
+b19049 <- "B19049"
+b25118 <- "B25118"
 
+# Get variables for Table B25119 and clean the variables.
 b25119_defns <- load_variables(2019, "acs5") %>%
   filter(str_sub(name, end = 6) %in% b25119) %>%
   filter(str_detect(name, "PR") == FALSE)
@@ -71,11 +73,63 @@ b25119_cleaned <- b25119_defns %>%
          across(.fns = ~str_remove_all(.x, ":")),
          across(.fns = ~str_remove_all(.x, " in the past 12 months \\(\\in 2019 inflation-adjusted dollars\\)\\ --")))
 
-output_b25119 <- map_dfr(years, function(yr){
+# Get variables for Table B19013, then create a function to pull race or ethnicity
+# from the variables. 
+b19013_defns <- load_variables(2019, "acs5") %>%
+  filter(str_sub(name, end = 7) %in% b19013) %>%
+  filter(str_detect(name, "PR") == FALSE)
+
+concept_to_race <- function(x) {
+  out <- x %>%
+    str_remove_all("MEDIAN HOUSEHOLD INCOME IN THE PAST 12 MONTHS \\(\\IN 2019 INFLATION-ADJUSTED DOLLARS\\)\\ \\(|\\)") %>%
+    str_to_title()
+}
+
+# Clean up the variables and create a column for race.
+b19013_cleaned <- b19013_defns %>%
+  mutate(race = concept_to_race(concept)) %>%
+  separate(label, c("estimate", "medhhincome"), sep = "!!") %>%
+  select(variable = name, medhhincome, race) %>%
+  mutate(across(.fns = ~replace_na(.x, "All")),
+          across(.fns = ~str_remove_all(.x, ":")))
+
+
+# Get variables for Table B19049 and clean the variables.
+b19049_defns <- load_variables(2019, "acs5") %>%
+  filter(str_sub(name, end = 6) %in% b19049) %>%
+  filter(str_detect(name, "PR") == FALSE)
+
+b19049_cleaned <- b19049_defns %>%
+  separate(label, c("estimate", "medhhincome", "total", "age"), sep = "!!") %>%
+  select(variable = name, medhhincome, age) %>%
+  mutate(across(.fns = ~replace_na(.x, "All")),
+         across(.fns = ~str_remove_all(.x, ":")),
+         across(.fns =~ str_remove_all(.x, "in the past 12 months \\(\\in 2019 inflation-adjusted dollars\\)\\ --")))
+
+# Get variables for Table B25118 and clean the variables. 
+b25118_defns <- load_variables(2019, "acs5") %>%
+  filter(str_sub(name, end = 6) %in% b25118) %>%
+  filter(str_detect(name, "PR") == FALSE)
+
+b25118_cleaned <- b25118_defns %>%
+  separate(label, c("estimate", "total", "tenure", "income"), sep = "!!") %>%
+  select(variable = name, tenure, income) %>%
+  mutate(across(.fns = ~replace_na(.x, "All")),
+         across(.fns = ~str_remove_all(.x, ":")))
+
+
+# Pull data from Census API. You cannot aggregate medians so for the median tables
+# you will need to pull data for the state, CBSA, and locality. For now we will just
+# pull 5-year estimates and deal with 1-year estimates in 2.0.0.
+
+
+# Table B25119 - Median Household Income by Tenure
+
+output_b25119_locality <- map_dfr(years, function(yr){
   acs_pull <- get_acs(
     geography = "county",
     table = b25119,
-    survey = "acs1",
+    survey = "acs5",
     year = yr,
     state = "VA"
   ) %>%
@@ -88,6 +142,192 @@ output_b25119 <- map_dfr(years, function(yr){
   
   acs_rearranged
   })
+
+output_b25119_cbsa <- map_dfr(years, function(yr){
+  acs_pull <- get_acs(
+    geography = "metropolitan statistical area/micropolitan statistical area",
+    table = b25119,
+    survey = "acs5",
+    year = yr
+  ) %>%
+    left_join(b25119_cleaned, by = "variable")
+  
+  acs_rearranged <- acs_pull %>%
+    mutate(year = yr) %>%
+    select(variable, year, CBSA = NAME, fips = GEOID, tenure,
+           estimate, moe) %>%
+    filter(str_detect(CBSA, "VA"))
+  
+  acs_rearranged
+  })
+
+output_b25119_state <- map_dfr(years, function(yr){
+  acs_pull <- get_acs(
+    geography = "state",
+    table = b25119,
+    survey = "acs5",
+    year = yr
+  ) %>%
+    left_join(b25119_cleaned, by = "variable")
+  
+  acs_rearranged <- acs_pull %>%
+    mutate(year = yr) %>%
+    select(variable, year, state = NAME, fips = GEOID, tenure,
+           estimate, moe)
+  
+  acs_rearranged
+  })
+
+# Table B19013 - Median Household Income by Race and Ethnicity
+
+output_b19013_locality <- map_dfr(b19013, function(tb) {
+  yearly_data <- map_dfr(years, function(yr) {
+    
+    acs_pull <- get_acs(
+      geography = "county",
+      table = tb,
+      year = yr,
+      state = "VA"
+    ) %>%
+    left_join(b19013_cleaned, by = "variable")
+    
+    acs_rearranged <- acs_pull %>%
+      mutate(year = yr) %>%
+      select(variable, year, locality = NAME, fips = GEOID, race, medhhincome,
+             estimate, moe)
+    
+    acs_rearranged
+  })
+  yearly_data
+})
+
+output_b19013_cbsa <- map_dfr(b19013, function(tb) {
+  yearly_data <- map_dfr(years, function(yr) {
+    
+    acs_pull <- get_acs(
+      geography = "metropolitan statistical area/micropolitan statistical area",
+      table = tb,
+      year = yr
+    ) %>%
+    left_join(b19013_cleaned, by = "variable")
+    
+    acs_rearranged <- acs_pull %>%
+      mutate(year = yr) %>%
+      select(variable, year, CBSA = NAME, fips = GEOID, race, medhhincome,
+             estimate, moe) %>%
+      filter(str_detect(CBSA, "VA"))
+    
+    acs_rearranged
+  })
+  yearly_data
+})
+
+output_b19013_state <- map_dfr(b19013, function(tb) {
+  yearly_data <- map_dfr(years, function(yr) {
+    
+    acs_pull <- get_acs(
+      geography = "state",
+      table = tb,
+      year = yr
+    ) %>%
+    left_join(b19013_cleaned, by = "variable")
+    
+    acs_rearranged <- acs_pull %>%
+      mutate(year = yr) %>%
+      select(variable, year, state = NAME, fips = GEOID, race, medhhincome,
+             estimate, moe)
+    
+    acs_rearranged
+  })
+  yearly_data
+})
+
+
+# Table B19049 - Median Household Income by Age of Householder
+output_b19049_locality <- map_dfr(years, function(yr) {
+    acs_pull <- get_acs(
+      geography = "county",
+      table = b19049,
+      year = yr
+    ) %>%
+    left_join(b19049_cleaned, by = "variable")
+    
+    acs_rearranged <- acs_pull %>%
+      mutate(year = yr) %>%
+      select(variable, year, locality = NAME, fips = GEOID, medhhincome, age,
+             estimate, moe)
+    
+    acs_rearranged
+  })
+
+
+output_b19049_cbsa <- map_dfr(years, function(yr) {
+    acs_pull <- get_acs(
+      geography = "metropolitan statistical area/micropolitan statistical area",
+      table = b19049,
+      year = yr
+    ) %>%
+    left_join(b19049_cleaned, by = "variable")
+    
+    acs_rearranged <- acs_pull %>%
+      mutate(year = yr) %>%
+      select(variable, year, CBSA = NAME, fips = GEOID, medhhincome, age,
+             estimate, moe) %>%
+      filter(str_detect(CBSA, "VA"))
+    
+    acs_rearranged
+  })
+
+output_b19049_state <- map_dfr(years, function(yr) {
+    acs_pull <- get_acs(
+      geography = "state",
+      table = b19049,
+      year = yr
+    ) %>%
+    left_join(b19049_cleaned, by = "variable")
+    
+    acs_rearranged <- acs_pull %>%
+      mutate(year = yr) %>%
+      select(variable, year, state = NAME, fips = GEOID, medhhincome, age,
+             estimate, moe)
+    
+    acs_rearranged
+  })
+
+# Table B25118 - Tenure by Household Income
+# This pull will only be for 5-year estimates for all versions because it represents
+# a distribution of incomes at a given point in time. This datapoint can also be aggregated
+# because it is a count of households and not a summary measure.
+
+output_b25118 <- map_dfr(years, function(yr) {
+  acs_pull <- get_acs(
+    geography = "county",
+    table = b25118,
+    year = yr,
+    state = "VA"
+  ) %>%
+    left_join(b25118_cleaned, by = "variable")
+  
+  acs_rearranged <- acs_pull %>%
+    mutate(year = yr) %>%
+    select(variable, year, locality = NAME, fips = GEOID, tenure, income,
+           estimate, moe)
+  
+  acs_rearranged
+})
+
+# Write all data to csv.
+
+write_csv(output_b25119_locality, "data/b25119_locality.csv")
+write_csv(output_b25119_cbsa, "data/b25119_cbsa.csv")
+write_csv(output_b25119_state, "data/b25119_state.csv")
+write_csv(output_b19013_locality, "data/b19013_locality.csv")
+write_csv(output_b19013_cbsa, "data/b19013_cbsa.csv")
+write_csv(output_b19013_state, "data/b19013_state.csv")
+write_csv(output_b19049_locality, "data/b19049_locality.csv")
+write_csv(output_b19049_cbsa, "data/b19049_cbsa.csv")
+write_csv(output_b19049_state, "data/b19049_state.csv")
+write_csv(output_b25118, "data/b25118.csv")
 ```
 
   
