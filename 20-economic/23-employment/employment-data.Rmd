@@ -1,8 +1,14 @@
 ---
-title: "employment-data"
-author: "Eric Mai"
-date: "2/2/2022"
-output: html_document
+title: "Sourcebook > Economic > Employment and Unemployment"
+subtitle: "Data sources and methods"
+author: "HousingForward Virginia"
+date: "Updated on `r Sys.Date()`"
+output:
+  html_document:
+    theme: lumen
+    toc: true
+    toc_float: true
+    number_sections: true
 ---
 
 ```{r setup, include=FALSE}
@@ -16,7 +22,7 @@ with estimates on employment, labor force, and unemployment. These data points a
 major indicators of local economic conditions and help inform the demand for housing
 as local economies add more jobs.
 
-## Data Collection and Preparation
+# Setup
 The **blscrapeR** package is used to pull LAUS data on employment and unemployment
 for all Virginia localities. All data is presented without season adjustments
 ```{r}
@@ -24,6 +30,10 @@ library('blscrapeR')
 library('tidyverse')
 library('tigris')
 
+```
+
+# Data Collection
+```{r}
 # The following pulls all localities in Virginia to help iterate through BLS series.
 # The TIGRIS package allows us to do this and pull FIPS codes.
 
@@ -99,9 +109,10 @@ bls_unemployment_pull <- function(unemploymentlist){
 }
 
 va_unemployment <- map_dfr(unemploymentlist, bls_unemployment_pull)
+```
 
-
-
+# Data prep
+```{r}
 # Now that a data frame is created with all localities and years needed, we need to create
 # an additional column for the FIPS code of each locality, so that we can join to a table 
 # of locality names later.
@@ -117,8 +128,10 @@ result <- list(va_employed, va_unemployment_rate, va_laborforce, va_unemployment
 names(result) = c('va_employed', 'va_unemployment_rate', 'va_laborforce', 'va_unemployment')
 
 list2env(result, envir = .GlobalEnv)
+```
 
-
+# Data export
+```{r}
 # Write to csv file.
 
 write_csv(va_employed, "data/va_employment_2008_2021.csv")
@@ -127,4 +140,9 @@ write_csv(va_laborforce, "data/va_laborforce_2008_2021.csv")
 write_csv(va_unemployment, "data/va_unemployment_2008_2021.csv")
 
 ```
+
+# Dashboard development
+
+Reserved for future Shiny app development.
+
 

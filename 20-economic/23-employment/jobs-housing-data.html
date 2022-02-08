@@ -243,27 +243,93 @@ div.tocify {
 <h1 class="title toc-ignore">Sourcebook &gt; Economic &gt; Jobs-Housing Imbalance</h1>
 <h3 class="subtitle">Data sources and methods</h3>
 <h4 class="author">HousingForward Virginia</h4>
-<h4 class="date">Updated on 2022-02-07</h4>
+<h4 class="date">Updated on 2022-02-08</h4>
 
 </div>
 
 
 <div id="data-sources" class="section level1" number="1">
 <h1><span class="header-section-number">1</span> Data Sources</h1>
-<p>Measuring the jobs and homes imbalance requires two separate data sources: <em><a href="https://www.census.gov/programs-surveys/popest.html">Population Estimates Program (PEP)</a> </em><a href="https://www.bls.gov/lau/">Local Unemployment Area Statistics (LAUS)</a></p>
-<p>Utilizing these two data sources we are able to understand the number of housing units and make comparisons to the overall labor force (i.e., all people age 16 and older who are working or actively looking for work).</p>
+<p>Measuring the jobs and homes imbalance requires two separate data sources:</p>
+<ul>
+<li><a href="https://www.census.gov/programs-surveys/popest.html">Population Estimates Program (PEP)</a></li>
+<li><a href="https://www.bls.gov/lau/">Local Unemployment Area Statistics (LAUS)</a></li>
+</ul>
+<p>Utilizing these two data sources we are able to understand the number of housing units and make comparisons to the overall number of jobs.</p>
+</div>
+<div id="setup" class="section level1" number="2">
+<h1><span class="header-section-number">2</span> Setup</h1>
 <pre class="r"><code>library(tidycensus)
 library(tidyverse)
+library(blscrapeR)
+library(tigris)
+knitr::opts_chunk$set(echo=TRUE, message=FALSE, warning=FALSE)</code></pre>
+</div>
+<div id="data-collection" class="section level1" number="3">
+<h1><span class="header-section-number">3</span> Data Collection</h1>
+<pre class="r"><code># Download total housing unit count from Population Estimates Program (PEP) and
+# Decennial Census P.L. 94-171 Redistricting Data.
 
 va_hu_localities &lt;- get_estimates(
   geography = &quot;county&quot;,
   state = &quot;VA&quot;,
-  variables = c(&quot;HUEST&quot;),
-  year = 2020,
+  variables = &quot;HUEST&quot;,
+  year = 2019,
   time_series = TRUE
-) %&gt;%
+) 
+
+va_hu_localities_2020 &lt;- get_decennial(
+  geography = &quot;county&quot;,
+  state = &quot;VA&quot;,
+  variables = &quot;H1_001N&quot;,
+  year = 2020
+)
+
+# The following pulls all localities in Virginia to help iterate through BLS series.
+# The TIGRIS package allows us to do this and pull FIPS codes.
+
+virginia &lt;- list_counties(&quot;VA&quot;)
+
+# The following creates an additional column of series ids based on BLS labels. The
+# mutate() function creates a new column called &#39;seriesid&#39; while the paste0() function
+# concatenates the necessary pieces of the series id without spaces.
+
+virginia &lt;- virginia %&gt;% mutate(jobsseries = paste0(&quot;LAUCN51&quot;, county_code, &quot;0000000005&quot;)) #employment
+                         
+# Only the &#39;seriesid&#39; field is needed to pull from the BLS API, therefore we need to
+# create a list of series ids for all 136 Virginia localities. 
+
+jobs_list &lt;- list(virginia$jobsseries)
+
+# The blscrapeR does not accept a list in its query pull and requires a vector. Therefore, 
+# unlist() is used in order to simplifies the list to a vector.
+
+jobs_list &lt;- unlist(jobs_list)
+
+
+# The BLS API has a series query limit of 50, but there are 136 localities (series ids)
+# to pull. So we need to split the vector into chunks using the split() function.
+
+jobs_list &lt;- split(jobs_list, ceiling(seq_along(jobs_list)/50))
+
+bls_jobs_pull &lt;- function(jobs_list){
+  bls_api(jobs_list,
+          startyear = 2010, endyear = 2022, annualaverage = TRUE, Sys.getenv(&quot;BLS_KEY&quot;)) %&gt;%
+    dateCast()
+}
+
+va_jobs &lt;- map_dfr(jobs_list, bls_jobs_pull) %&gt;%
+  filter(str_detect(periodName, &quot;Annual&quot;)) %&gt;%
+  mutate(fips = substr(seriesID, 6, 10))</code></pre>
+</div>
+<div id="data-prep" class="section level1" number="4">
+<h1><span class="header-section-number">4</span> Data prep</h1>
+<pre class="r"><code># Date codes in PEP data frame need to be converted to usable dates, and then PL 
+# data frame needs to have matching columns added.
+
+va_hu_localities &lt;- va_hu_localities %&gt;%
   mutate(longdate = 
-    case_when(
+    case_when( # Add date values.
       DATE == 1 ~ &quot;4/1/2010&quot;,
       DATE == 2 ~ &quot;4/1/2010&quot;,
       DATE == 3 ~ &quot;7/1/2010&quot;,
@@ -278,13 +344,13 @@ va_hu_localities &lt;- get_estimates(
       DATE == 12 ~ &quot;7/1/2019&quot;
     ),
 counttype = 
-      case_when(
+      case_when( # Add description for data value type.
         DATE == 1 ~ &quot;Census population&quot;,
         DATE == 2 ~ &quot;Estimates base&quot;,
         TRUE ~ &quot;Population estimate&quot;
       ),
 year = 
-  case_when(
+  case_when( # Add year values.
     DATE == 1 ~ 2010,
       DATE == 2 ~ 2010,
       DATE == 3 ~ 2010,
@@ -300,59 +366,36 @@ year =
   )
   )
 
+# Add matching columns with appropriate data to the PL data frame.
+
+va_hu_localities_2020 &lt;- va_hu_localities_2020 %&gt;%
+  mutate(DATE = 13,
+         longdate = &quot;4/1/2020&quot;,
+         counttype = &quot;Census population&quot;,
+         year = 2020)
+
+# Then combine the two data frames.
+
+va_hu &lt;- rbind(va_hu_localities, va_hu_localities_2020)
 
 
-library(&#39;blscrapeR&#39;)
-library(&#39;tigris&#39;)
+# Combine the the housing unit and labor force data frames together based on year and FIPS.
 
-# The following pulls all localities in Virginia to help iterate through BLS series.
-# The TIGRIS package allows us to do this and pull FIPS codes.
+va_jobs_hu &lt;- va_jobs %&gt;%
+  left_join(va_hu, by = c(&#39;fips&#39; = &#39;GEOID&#39;, &#39;year&#39; = &#39;year&#39;))
 
-virginia &lt;- list_counties(&quot;VA&quot;)
+va_jobs_hu &lt;- va_jobs_hu %&gt;%
+  rename(employment = value.x, hu = value.y)</code></pre>
+</div>
+<div id="data-export" class="section level1" number="5">
+<h1><span class="header-section-number">5</span> Data export</h1>
+<pre class="r"><code># Write to csv file.
 
-# The following creates an additional column of series ids based on BLS labels. The
-# mutate() function creates a new column called &#39;seriesid&#39; while the paste0() function
-# concatenates the necessary pieces of the series id without spaces.
-
-virginia &lt;- virginia %&gt;% mutate(lfseries = paste0(&quot;LAUCN51&quot;, county_code, &quot;0000000006&quot;)) #labor force
-                         
-# Only the &#39;seriesid&#39; field is needed to pull from the BLS API, therefore we need to
-# create a list of series ids for all 136 Virginia localities. 
-
-lflist &lt;- list(virginia$lfseries)
-
-# The blscrapeR does not accept a list in its query pull and requires a vector. Therefore, 
-# unlist() is used in order to simplifies the list to a vector.
-
-lflist &lt;- unlist(lflist)
-
-
-# The BLS API has a series query limit of 50, but there are 136 localities (series ids)
-# to pull. So we need to split the vector into chunks using the split() function.
-
-lflist &lt;- split(lflist, ceiling(seq_along(lflist)/50))
-
-bls_laborforce_pull &lt;- function(lflist){
-  bls_api(lflist,
-          startyear = 2010, endyear = 2021, annualaverage = TRUE, Sys.getenv(&quot;BLS_KEY&quot;)) %&gt;%
-    dateCast()
-}
-
-va_laborforce &lt;- map_dfr(lflist, bls_laborforce_pull) %&gt;%
-  filter(str_detect(periodName, &quot;Annual&quot;)) %&gt;%
-  mutate(fips = substr(seriesID, 6, 10))
-
-# Combine the two data frames based on year and FIPS.
-
-va_laborforce_hu &lt;- va_laborforce %&gt;%
-  left_join(va_hu_localities, by = c(&#39;fips&#39; = &#39;GEOID&#39;, &#39;year&#39; = &#39;year&#39;))
-
-va_laborforce_hu &lt;- va_laborforce_hu %&gt;%
-  rename(hu = value.x, laborforce = value.y)
-
-# Write to csv file.
-
-write_csv(va_laborforce_hu, &quot;data/va_laborforce_housing_2010_2019.csv&quot;)</code></pre>
+write_csv(va_jobs_hu, &quot;data/va_jobs_housing_2010_2020.csv&quot;)</code></pre>
+</div>
+<div id="dashboard-development" class="section level1" number="6">
+<h1><span class="header-section-number">6</span> Dashboard development</h1>
+<p>Reserved for fuure Shiny app development.</p>
 </div>
 
 

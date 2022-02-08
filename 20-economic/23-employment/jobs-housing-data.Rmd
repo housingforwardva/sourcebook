@@ -18,26 +18,90 @@ knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 # Data Sources
 
 Measuring the jobs and homes imbalance requires two separate data sources: 
-*[Population Estimates Program (PEP)](https://www.census.gov/programs-surveys/popest.html)
-*[Local Unemployment Area Statistics (LAUS)](https://www.bls.gov/lau/)
+
+* [Population Estimates Program (PEP)](https://www.census.gov/programs-surveys/popest.html)
+* [Local Unemployment Area Statistics (LAUS)](https://www.bls.gov/lau/)
 
 Utilizing these two data sources we are able to understand the number of housing units and make
-comparisons to the overall labor force (i.e., all people age 16 and older who are working or actively
-looking for work).
+comparisons to the overall number of jobs.
 
+# Setup
 ```{r}
 library(tidycensus)
 library(tidyverse)
+library(blscrapeR)
+library(tigris)
+knitr::opts_chunk$set(echo=TRUE, message=FALSE, warning=FALSE)
+```
+
+# Data Collection
+```{r}
+
+# Download total housing unit count from Population Estimates Program (PEP) and
+# Decennial Census P.L. 94-171 Redistricting Data.
 
 va_hu_localities <- get_estimates(
   geography = "county",
   state = "VA",
-  variables = c("HUEST"),
-  year = 2020,
+  variables = "HUEST",
+  year = 2019,
   time_series = TRUE
-) %>%
+) 
+
+va_hu_localities_2020 <- get_decennial(
+  geography = "county",
+  state = "VA",
+  variables = "H1_001N",
+  year = 2020
+)
+
+# The following pulls all localities in Virginia to help iterate through BLS series.
+# The TIGRIS package allows us to do this and pull FIPS codes.
+
+virginia <- list_counties("VA")
+
+# The following creates an additional column of series ids based on BLS labels. The
+# mutate() function creates a new column called 'seriesid' while the paste0() function
+# concatenates the necessary pieces of the series id without spaces.
+
+virginia <- virginia %>% mutate(jobsseries = paste0("LAUCN51", county_code, "0000000005")) #employment
+                         
+# Only the 'seriesid' field is needed to pull from the BLS API, therefore we need to
+# create a list of series ids for all 136 Virginia localities. 
+
+jobs_list <- list(virginia$jobsseries)
+
+# The blscrapeR does not accept a list in its query pull and requires a vector. Therefore, 
+# unlist() is used in order to simplifies the list to a vector.
+
+jobs_list <- unlist(jobs_list)
+
+
+# The BLS API has a series query limit of 50, but there are 136 localities (series ids)
+# to pull. So we need to split the vector into chunks using the split() function.
+
+jobs_list <- split(jobs_list, ceiling(seq_along(jobs_list)/50))
+
+bls_jobs_pull <- function(jobs_list){
+  bls_api(jobs_list,
+          startyear = 2010, endyear = 2022, annualaverage = TRUE, Sys.getenv("BLS_KEY")) %>%
+    dateCast()
+}
+
+va_jobs <- map_dfr(jobs_list, bls_jobs_pull) %>%
+  filter(str_detect(periodName, "Annual")) %>%
+  mutate(fips = substr(seriesID, 6, 10))
+```
+
+# Data prep
+
+```{r}
+# Date codes in PEP data frame need to be converted to usable dates, and then PL 
+# data frame needs to have matching columns added.
+
+va_hu_localities <- va_hu_localities %>%
   mutate(longdate = 
-    case_when(
+    case_when( # Add date values.
       DATE == 1 ~ "4/1/2010",
       DATE == 2 ~ "4/1/2010",
       DATE == 3 ~ "7/1/2010",
@@ -52,13 +116,13 @@ va_hu_localities <- get_estimates(
       DATE == 12 ~ "7/1/2019"
     ),
 counttype = 
-      case_when(
+      case_when( # Add description for data value type.
         DATE == 1 ~ "Census population",
         DATE == 2 ~ "Estimates base",
         TRUE ~ "Population estimate"
       ),
 year = 
-  case_when(
+  case_when( # Add year values.
     DATE == 1 ~ 2010,
       DATE == 2 ~ 2010,
       DATE == 3 ~ 2010,
@@ -74,58 +138,36 @@ year =
   )
   )
 
+# Add matching columns with appropriate data to the PL data frame.
+
+va_hu_localities_2020 <- va_hu_localities_2020 %>%
+  mutate(DATE = 13,
+         longdate = "4/1/2020",
+         counttype = "Census population",
+         year = 2020)
+
+# Then combine the two data frames.
+
+va_hu <- rbind(va_hu_localities, va_hu_localities_2020)
 
 
-library('blscrapeR')
-library('tigris')
+# Combine the the housing unit and labor force data frames together based on year and FIPS.
 
-# The following pulls all localities in Virginia to help iterate through BLS series.
-# The TIGRIS package allows us to do this and pull FIPS codes.
+va_jobs_hu <- va_jobs %>%
+  left_join(va_hu, by = c('fips' = 'GEOID', 'year' = 'year'))
 
-virginia <- list_counties("VA")
-
-# The following creates an additional column of series ids based on BLS labels. The
-# mutate() function creates a new column called 'seriesid' while the paste0() function
-# concatenates the necessary pieces of the series id without spaces.
-
-virginia <- virginia %>% mutate(lfseries = paste0("LAUCN51", county_code, "0000000006")) #labor force
-                         
-# Only the 'seriesid' field is needed to pull from the BLS API, therefore we need to
-# create a list of series ids for all 136 Virginia localities. 
-
-lflist <- list(virginia$lfseries)
-
-# The blscrapeR does not accept a list in its query pull and requires a vector. Therefore, 
-# unlist() is used in order to simplifies the list to a vector.
-
-lflist <- unlist(lflist)
-
-
-# The BLS API has a series query limit of 50, but there are 136 localities (series ids)
-# to pull. So we need to split the vector into chunks using the split() function.
-
-lflist <- split(lflist, ceiling(seq_along(lflist)/50))
-
-bls_laborforce_pull <- function(lflist){
-  bls_api(lflist,
-          startyear = 2010, endyear = 2021, annualaverage = TRUE, Sys.getenv("BLS_KEY")) %>%
-    dateCast()
-}
-
-va_laborforce <- map_dfr(lflist, bls_laborforce_pull) %>%
-  filter(str_detect(periodName, "Annual")) %>%
-  mutate(fips = substr(seriesID, 6, 10))
-
-# Combine the two data frames based on year and FIPS.
-
-va_laborforce_hu <- va_laborforce %>%
-  left_join(va_hu_localities, by = c('fips' = 'GEOID', 'year' = 'year'))
-
-va_laborforce_hu <- va_laborforce_hu %>%
-  rename(hu = value.x, laborforce = value.y)
-
-# Write to csv file.
-
-write_csv(va_laborforce_hu, "data/va_laborforce_housing_2010_2019.csv")
+va_jobs_hu <- va_jobs_hu %>%
+  rename(employment = value.x, hu = value.y)
 ```
 
+# Data export
+
+```{r}
+# Write to csv file.
+
+write_csv(va_jobs_hu, "data/va_jobs_housing_2010_2020.csv")
+```
+
+# Dashboard development
+
+Reserved for fuure Shiny app development.
