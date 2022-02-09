@@ -55,7 +55,6 @@ better comparisons. For more information on this, please see
 # Load necessary libraries to pull data.
 library(tidyverse)
 library(tidycensus)
-library(lubridate)
 library(readxl)
 
 knitr::opts_chunk$set(echo=TRUE, message=FALSE, warning=FALSE)
@@ -336,7 +335,8 @@ output_b25118 <- map_dfr(years, function(yr) {
 
 cpi <- read_excel("raw/CPI_U_RS.xlsx")
 cpi <- cpi %>% 
-  rename(year = Year)
+  rename(year = Year,
+         priceindex = cpi_index)
 
 # Join the CPI data frame to the median household income data frames.
 
@@ -359,27 +359,27 @@ names(result) = c('output_b19013_locality', 'output_b19013_cbsa', 'output_b19013
 
 list2env(result, envir = .GlobalEnv)
 
-# Create a column for 2019 dollar value (dollars19). 2019 CPI value is 376.5.
-
-adjustment <- function(x){
-  x %>%
-    mutate(dollars19 = ((376.5/cpi_index)*estimate))
-}
-
-dollars19_dfs <- list(output_b19013_locality, output_b19013_cbsa, output_b19013_state,
+adjustment_dfs <- list(output_b19013_locality, output_b19013_cbsa, output_b19013_state,
                    output_b19049_locality, output_b19049_cbsa, output_b19049_state,
                    output_b25119_locality, output_b25119_cbsa, output_b25119_state) 
 
-dollars19 <- dollars19_dfs %>%
+adjustment <- function(x) {
+  transform(x, dollars19 = ((376.5/priceindex)*estimate))
+}
+
+
+dollar_result <- adjustment_dfs %>%
   lapply(adjustment)
 
-names(dollars19) = c('output_b19013_locality', 'output_b19013_cbsa', 'output_b19013_state',
+
+names(dollar_result) = c('output_b19013_locality', 'output_b19013_cbsa', 'output_b19013_state',
                    'output_b19049_locality', 'output_b19049_cbsa', 'output_b19049_state',
                    'output_b25119_locality', 'output_b25119_cbsa', 'output_b25119_state')
 
-list2env(result, envir = .GlobalEnv)
+list2env(dollar_result, envir = .GlobalEnv)
 
 ```
+
 # Data export
 ```{r}
 # Write all data to csv.
