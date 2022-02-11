@@ -1,0 +1,174 @@
+---
+title: "Sourcebook > Demographics > Household types"
+subtitle: "Data sources and methods"
+author: "HousingForward Virginia"
+date: "Updated on `r Sys.Date()`"
+output:
+  html_document:
+    theme: lumen
+    toc: true
+    toc_float: true
+    number_sections: true
+---
+
+# Data sources
+
+### American Community Survey {-}
+
+Two tables...
+
+* Table B11012: Households by Type
+* Table B09021: Living Arrangements of Adults 18 Years and Over by Age
+
+Link: 
+
+# Setup
+
+```{r setup, message=FALSE, warning=FALSE}
+
+# Load packages and set global chunk options
+
+library(tidycensus)
+library(tidyverse)
+
+knitr::opts_chunk$set(echo=TRUE, message=FALSE, warning=FALSE)
+
+```
+
+# Data collection
+
+```{r collect}
+
+# Get variables for Table B11012
+
+b11012_vars <- load_variables(2019, "acs5") %>% 
+  filter(str_detect(name, "B11012"))
+
+# Get B11012 data for every locality in Virginia
+
+b11012_raw <- get_acs(
+  geography = "county",
+  state = "VA",
+  table = "B11012",
+  year = 2019
+)
+
+# Get variables for Table B09021
+
+b09021_vars <- load_variables(2019, "acs5") %>% 
+  filter(str_detect(name, "B09021"))
+
+# Get B09021 data for every locality in Virginia
+
+b09021_raw <- get_acs(
+  geography = "county",
+  state = "VA",
+  table = "B09021",
+  year = 2019
+)
+
+```
+
+# Data prep
+
+```{r prep}
+
+# Clean B11012 variable names
+
+b11012_vars_clean <- b11012_vars %>% 
+  separate(label, into = c("est", "tot", "type", "subtype"),
+           sep = "!!") %>% 
+  select(variable = name, type, subtype) %>% 
+  mutate(across(.fns = ~str_remove_all(.x, ":"))) %>%
+  filter(across(c(type, subtype), ~ !is.na(.x))) %>% 
+  mutate(type = case_when(
+    str_detect(type, "couple") ~ "Married or cohabitating couple",
+    str_detect(type, "present") ~ "Householder with no partner",
+    TRUE ~ type)
+    ) %>% 
+  mutate(subtype = case_when(
+    str_detect(subtype, "With own children") ~ "With own children",
+    str_detect(subtype, "With no own") ~ "Without own children",
+    subtype == "With relatives, no own children under 18 years" ~ "With relatives, no own children",
+    subtype == "With only non relatives present" ~ "With only nonrelatives",
+    TRUE ~ subtype)
+    )
+
+# Join B11012 variables to data, calculate new sums, and add data reliability info
+
+b11012_data <- b11012_raw %>% 
+  right_join(b11012_vars_clean, by = "variable") %>% # Use right_join to leave out unnecessary subtotals from data
+  select(GEOID, type, subtype, estimate, moe) %>% # Simplify columns
+  group_by(GEOID, type, subtype) %>% # Collapse and sum subtypes
+  summarise(
+    estimate = sum(estimate),
+    moe = moe_sum(moe, estimate) # Calculate new group-wise margins of error 
+  ) %>% 
+  ungroup() %>% 
+  mutate(cv = ((moe/1.645)/estimate)*100) %>% # Calculate coefficient of variation
+  mutate(reliability = case_when(
+    cv < 15 ~ "High reliability",
+    cv >= 15 & cv <= 30 ~ "Medium reliability",
+    cv > 30 ~ "Low reliability")
+  )
+
+# Clean B09021 variable names
+
+b09021_vars_clean <- b09021_vars %>% 
+  separate(label, into = c("est", "tot", "age", "type"),
+           sep = "!!") %>% 
+  select(variable = name, age, type) %>% 
+  mutate(across(.fns = ~str_remove_all(.x, ":")),
+         age = str_remove_all(age, " years")) %>%
+  mutate(type = case_when(
+    variable %in% c(paste0("B09021_00", 2:7)) ~ age,
+    TRUE ~ type)) %>%
+  mutate(age = case_when(
+    variable %in% c(paste0("B09021_00", 2:7)) ~ "All ages",
+    TRUE ~ age)) %>%
+  filter(across(c(age, type), ~ !is.na(.x))) %>% 
+  mutate(type = case_when(
+    str_detect(type, "Householder living") ~ "Lives with married or unmarried partner",
+    type == "Child of householder" ~ "Lives with parent(s)",
+    type == "Other relatives" ~ "Lives with other relative(s)",
+    type == "Other nonrelatives" ~ "Lives with other nonrelative(s)",
+    TRUE ~ type)
+  )
+
+# Join B09021 variables to data, calculate new sums, and add data reliability info
+
+b09021_data <- b09021_raw %>% 
+  right_join(b09021_vars_clean, by = "variable") %>% # Use right_join to leave out unnecessary subtotals from data
+  select(GEOID, age, type, estimate, moe) %>% # Simplify columns
+  group_by(GEOID, age, type) %>% # Collapse and sum subtypes
+  summarise(
+    estimate = sum(estimate),
+    moe = moe_sum(moe, estimate) # Calculate new group-wise margins of error 
+  ) %>% 
+  ungroup() %>% 
+  mutate(cv = ((moe/1.645)/estimate)*100) %>% # Calculate coefficient of variation
+  mutate(reliability = case_when(
+    cv < 15 ~ "High reliability",
+    cv >= 15 & cv <= 30 ~ "Medium reliability",
+    cv > 30 ~ "Low reliability")
+  )
+
+```
+
+# Data export
+
+```{r export}
+
+# Save household types data from B11012
+
+write_csv(b11012_data, "data/hh-type.csv")
+
+# Save living arrangements data from B09021
+
+write_csv(b09021_data, "data/living-arrangements.csv")
+
+```
+
+# Dashboard development
+
+Reserved for future Shiny app development.
