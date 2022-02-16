@@ -1,15 +1,19 @@
 ---
-title: "homeownership rate"
-author: "Eric Mai"
-date: "1/21/2022"
-output: html_document
+title: "Sourcebook > Homeownership > Homeownership rate"
+subtitle: "Data sources and methods"
+author: "HousingForward Virginia"
+date: "Updated on `r Sys.Date()`"
+output:
+  html_document:
+    theme: lumen
+    toc: true
+    toc_float: true
+    number_sections: true
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, eval=FALSE)
-```
+# Data Sources
 
-## Data Sources
+### American Community Survey (ACS) {-}
 Homeownership rate is derived by dividing the total number of owner-occupied
 housing units by the total number of occupied housing units (owner-occupied +
 renter-occupied). The source of this data set is the Table B25003 from the 
@@ -28,16 +32,23 @@ through I to the end of the table ID.
 + **H** is White Alone, Not Hispanic or Latino
 + **I** is Hispanic or Latino
 
-## Data Collection and Data Prep
 The following script pulls Table B25003 for all races and ethnicity, and cleans
 the data in a single script.
 
-```{r Download B25003, echo=T, message=FALSE, warning=FALSE, paged.print=FALSE, results='hide'}
+# Setup
+```{r setup, message=FALSE, warning=FALSE}
 
-#Load the the necessary packages to download the data from Census API.
+#Load the the necessary packages to download the data from Census API and set
+# global chunk options.
+
 library(tidyverse)
 library(tidycensus)
 
+knitr::opts_chunk$set(echo=TRUE, message=FALSE, warning=FALSE)
+```
+
+# Data collection
+```{r data-collect}
 # Create an object for all years.
 years <- 2010:2019
 
@@ -99,11 +110,44 @@ output_b25003 <- map_dfr(b25003, function(tb) {
   yearly_data
 })
 
+output_b25003_state <- map_dfr(b25003, function(tb) {
+  yearly_data <- map_dfr(years, function(yr) {
+    
+    acs_pull <- get_acs(
+      geography = "state",
+      table = tb,
+      year = yr
+    ) %>%
+      left_join(b25003_cleaned, by = "variable")
+    
+    acs_rearranged <- acs_pull %>%
+      mutate(year = yr) %>%
+      select(variable, year, locality = NAME, fips = GEOID, race, tenure,
+             estimate, moe)
+    
+    acs_rearranged
+  })
+  yearly_data
+})
+
+```
+
+# Data Prep
+```{r data-prep}
 # The previous data output makes it difficult to easily calculate dynamic 
 # homeownership rates if wanting to combine multiple localities or races. In
 # order to create these calculations more easily, unpivot the columns to rows
-# utilizing the pivote_wider function.
+# utilizing the pivot_wider function.
 output_b25003_wide <- output_b25003 %>% 
+  select( -c(variable)) %>% 
+  pivot_wider(names_from = tenure,
+              values_from = c(estimate, moe)) %>% 
+  select(year:race, est_all = estimate_All, est_owner = "estimate_Owner occupied",
+         est_renter = "estimate_Renter occupied", moe_all = moe_All, 
+         moe_owner = "moe_Owner occupied",
+         moe_renter = "moe_Renter occupied")
+
+output_b25003_wide_state <- output_b25003_state %>% 
   select( -c(variable)) %>% 
   pivot_wider(names_from = tenure,
               values_from = c(estimate, moe)) %>% 
@@ -120,10 +164,13 @@ output_b25003_wide <- output_b25003_wide %>%
          across(.fns = ~str_replace_all(.x, "Bedford city", "Bedford County")),
          across(.fns = ~str_replace_all(.x, "51515", "51019")))
 
+```
 
+# Data export
+```{r data-export}
 # Write to csv.
 write_csv(output_b25003_wide, "b25003_wide.csv")
-
+write_csv(output_b25003_wide_state, "b25003_state.csv")
 ```
 
 The following script pulls data on tenure by age of householder. This data is used
