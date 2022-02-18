@@ -27,7 +27,7 @@ Link: https://www.census.gov/construction/bps/
 
 # Load packages and set global chunk options
 
-library(tidycensus)
+library(tidyverse)
 library(glue)
 
 knitr::opts_chunk$set(
@@ -67,9 +67,7 @@ column_names <- header_rows %>%
 # Scrape annual county data and apply column names
 
 cbps_raw <- map_df(years, ~{
-  
-  print(glue("Downloading data for {.x}..."))
-  
+
   raw <- read_csv(glue("https://www2.census.gov/econ/bps/County/co{.x}a.txt"), skip = 2, 
                     col_names = FALSE) %>%
     select(X1:X18) %>%
@@ -88,19 +86,21 @@ cbps_raw <- map_df(years, ~{
 # Filter data for Virginia and put into tidy format
 
 cbps_data <- cbps_raw %>% 
-    mutate(year = `Survey: Date`,
-           GEOID = paste0(`FIPS: State`, `FIPS: County`)) %>%
-    select(`1-unit: Bldgs`:GEOID) %>%
-    filter(str_sub(GEOID, 1, 2) == "51") %>%
-    pivot_longer(`1-unit: Bldgs`:`5+ units: Value`,
-                 names_to = "type",
-                 values_to = "value") %>%
-    separate(type, into = c("Type", "col"), sep = ": ") %>%
-    pivot_wider(names_from = col,
-                values_from = value) %>%
-    rename_with(tolower, Type:Value) %>% 
-    select(GEOID, year, type:value)
-
+  mutate(year = `Survey: Date`,
+         GEOID = paste0(`FIPS: State`, `FIPS: County`)) %>%
+  select(`1-unit: Bldgs`:GEOID) %>%
+  filter(str_sub(GEOID, 1, 2) == "51") %>%
+  pivot_longer(`1-unit: Bldgs`:`5+ units: Value`,
+               names_to = "type",
+               values_to = "value") %>%
+  separate(type, into = c("Type", "col"), sep = ": ") %>%
+  pivot_wider(names_from = col,
+              values_from = value) %>%
+  rename_with(tolower, Type:Value) %>% 
+  select(GEOID, year, type:value) %>% 
+  mutate(GEOID = str_replace_all(GEOID, "51515", "51019"), # Merge 'Bedford city' values to 'Bedford county'
+         GEOID = str_replace_all(GEOID, "51560", "51005")) # Merge 'Clifton Forge city' values to 'Alleghany county'
+  
 ```
 
 # Data export
