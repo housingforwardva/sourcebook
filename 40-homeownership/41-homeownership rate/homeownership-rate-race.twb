@@ -1,0 +1,2314 @@
+<?xml version='1.0' encoding='utf-8' ?>
+
+<!-- build 20214.21.1217.2252                               -->
+<workbook original-version='18.1' source-build='2021.4.2 (20214.21.1217.2252)' source-platform='win' version='18.1' xml:base='http://localhost:9100' xmlns:user='http://www.tableausoftware.com/xml/user'>
+  <document-format-change-manifest>
+    <_.fcp.AccessibleZoneTabOrder.true...AccessibleZoneTabOrder />
+    <_.fcp.AnimationOnByDefault.true...AnimationOnByDefault />
+    <DashboardGridOverlay />
+    <MapboxVectorStylesAndLayers />
+    <_.fcp.MarkAnimation.true...MarkAnimation />
+    <_.fcp.ObjectModelEncapsulateLegacy.true...ObjectModelEncapsulateLegacy />
+    <_.fcp.ObjectModelExtractV2.true...ObjectModelExtractV2 />
+    <_.fcp.ObjectModelTableType.true...ObjectModelTableType />
+    <_.fcp.SchemaViewerObjectModel.true...SchemaViewerObjectModel />
+    <SetMembershipControl />
+    <SheetIdentifierTracking />
+    <SortTagCleanup />
+    <VizInTooltipHideWorksheet />
+    <WindowsPersistSimpleIdentifiers />
+    <ZoneBackgroundTransparency />
+  </document-format-change-manifest>
+  <repository-location derived-from='https://public.tableau.com/workbooks/Sourcebook-Homeowershipgap?rev=1.2' id='Sourcebook-Homeowershipgap' path='/workbooks' revision='1.3' />
+  <preferences>
+    <preference name='ui.encoding.shelf.height' value='24' />
+    <preference name='ui.shelf.height' value='26' />
+    <color-palette custom='true' name='HFV Desert-Grass Diverging' type='ordered-sequential'>
+      <color>#e0592a</color>
+      <color>#259591</color>
+    </color-palette>
+  </preferences>
+  <_.fcp.AnimationOnByDefault.false...style>
+    <_.fcp.AnimationOnByDefault.false..._.fcp.MarkAnimation.true...style-rule element='animation'>
+      <_.fcp.AnimationOnByDefault.false...format attr='animation-on' value='ao-on' />
+    </_.fcp.AnimationOnByDefault.false..._.fcp.MarkAnimation.true...style-rule>
+  </_.fcp.AnimationOnByDefault.false...style>
+  <datasources>
+    <datasource caption='b25003_wide' inline='true' name='federated.1s1owxb0t1qs4l13eiuaq0hwqt3j' version='18.1'>
+      <connection class='federated'>
+        <named-connections>
+          <named-connection caption='b25003_wide' name='textscan.13go0k11fb6js01efp75x1ti4c32'>
+            <connection class='textscan' directory='G:/Shared drives/sourcebook/sourcebook-evm/sourcebook/40-homeownership/41-homeownership rate/data' filename='b25003_wide.csv' server='' workgroup-auth-mode='as-is' />
+          </named-connection>
+          <named-connection caption='va-cbsa-locality-lookup' name='textscan.1jgoscx0w94cmi1cfjcb50k9at2e'>
+            <connection class='textscan' directory='G:/Shared drives/sourcebook/sourcebook-evm/sourcebook/00-admin' filename='va-cbsa-locality-lookup.csv' server='' workgroup-auth-mode='as-is' />
+          </named-connection>
+        </named-connections>
+        <_.fcp.ObjectModelEncapsulateLegacy.false...relation join='inner' type='join'>
+          <clause type='join'>
+            <expression op='='>
+              <expression op='[b25003_wide.csv].[fips]' />
+              <expression op='[va-cbsa-locality-lookup.csv].[fips_full]' />
+            </expression>
+          </clause>
+          <relation connection='textscan.13go0k11fb6js01efp75x1ti4c32' name='b25003_wide.csv' table='[b25003_wide#csv]' type='table'>
+            <columns character-set='UTF-8' header='yes' locale='en_US' separator=','>
+              <column datatype='date' date-parse-format='yyyy' name='year' ordinal='0' />
+              <column datatype='string' name='locality' ordinal='1' />
+              <column datatype='integer' name='fips' ordinal='2' />
+              <column datatype='string' name='race' ordinal='3' />
+              <column datatype='integer' name='est_all' ordinal='4' />
+              <column datatype='integer' name='est_owner' ordinal='5' />
+              <column datatype='integer' name='est_renter' ordinal='6' />
+              <column datatype='integer' name='moe_all' ordinal='7' />
+              <column datatype='integer' name='moe_owner' ordinal='8' />
+              <column datatype='integer' name='moe_renter' ordinal='9' />
+            </columns>
+          </relation>
+          <relation connection='textscan.1jgoscx0w94cmi1cfjcb50k9at2e' name='va-cbsa-locality-lookup.csv' table='[va-cbsa-locality-lookup#csv]' type='table'>
+            <columns character-set='UTF-8' header='yes' locale='en_US' separator=','>
+              <column datatype='string' name='state' ordinal='0' />
+              <column datatype='integer' name='fips_state' ordinal='1' />
+              <column datatype='integer' name='fips_locality' ordinal='2' />
+              <column datatype='integer' name='fips_full' ordinal='3' />
+              <column datatype='string' name='name_long' ordinal='4' />
+              <column datatype='string' name='name_short' ordinal='5' />
+              <column datatype='integer' name='cbsa_code' ordinal='6' />
+              <column datatype='integer' name='metropolitan_div_code' ordinal='7' />
+              <column datatype='string' name='cbsa_title' ordinal='8' />
+              <column datatype='string' name='central_outlying' ordinal='9' />
+              <column datatype='string' name='metro_micro_nonmetro' ordinal='10' />
+            </columns>
+          </relation>
+        </_.fcp.ObjectModelEncapsulateLegacy.false...relation>
+        <_.fcp.ObjectModelEncapsulateLegacy.true...relation join='inner' type='join'>
+          <clause type='join'>
+            <expression op='='>
+              <expression op='[b25003_wide.csv].[fips]' />
+              <expression op='[va-cbsa-locality-lookup.csv].[fips_full]' />
+            </expression>
+          </clause>
+          <relation connection='textscan.13go0k11fb6js01efp75x1ti4c32' name='b25003_wide.csv' table='[b25003_wide#csv]' type='table'>
+            <columns character-set='UTF-8' header='yes' locale='en_US' separator=','>
+              <column datatype='date' date-parse-format='yyyy' name='year' ordinal='0' />
+              <column datatype='string' name='locality' ordinal='1' />
+              <column datatype='integer' name='fips' ordinal='2' />
+              <column datatype='string' name='race' ordinal='3' />
+              <column datatype='integer' name='est_all' ordinal='4' />
+              <column datatype='integer' name='est_owner' ordinal='5' />
+              <column datatype='integer' name='est_renter' ordinal='6' />
+              <column datatype='integer' name='moe_all' ordinal='7' />
+              <column datatype='integer' name='moe_owner' ordinal='8' />
+              <column datatype='integer' name='moe_renter' ordinal='9' />
+            </columns>
+          </relation>
+          <relation connection='textscan.1jgoscx0w94cmi1cfjcb50k9at2e' name='va-cbsa-locality-lookup.csv' table='[va-cbsa-locality-lookup#csv]' type='table'>
+            <columns character-set='UTF-8' header='yes' locale='en_US' separator=','>
+              <column datatype='string' name='state' ordinal='0' />
+              <column datatype='integer' name='fips_state' ordinal='1' />
+              <column datatype='integer' name='fips_locality' ordinal='2' />
+              <column datatype='integer' name='fips_full' ordinal='3' />
+              <column datatype='string' name='name_long' ordinal='4' />
+              <column datatype='string' name='name_short' ordinal='5' />
+              <column datatype='integer' name='cbsa_code' ordinal='6' />
+              <column datatype='integer' name='metropolitan_div_code' ordinal='7' />
+              <column datatype='string' name='cbsa_title' ordinal='8' />
+              <column datatype='string' name='central_outlying' ordinal='9' />
+              <column datatype='string' name='metro_micro_nonmetro' ordinal='10' />
+            </columns>
+          </relation>
+        </_.fcp.ObjectModelEncapsulateLegacy.true...relation>
+        <metadata-records>
+          <metadata-record class='capability'>
+            <remote-name />
+            <remote-type>0</remote-type>
+            <parent-name>[b25003_wide.csv]</parent-name>
+            <remote-alias />
+            <aggregation>Count</aggregation>
+            <contains-null>true</contains-null>
+            <attributes>
+              <attribute datatype='string' name='character-set'>&quot;UTF-8&quot;</attribute>
+              <attribute datatype='string' name='collation'>&quot;en_US&quot;</attribute>
+              <attribute datatype='string' name='field-delimiter'>&quot;,&quot;</attribute>
+              <attribute datatype='string' name='header-row'>&quot;true&quot;</attribute>
+              <attribute datatype='string' name='locale'>&quot;en_US&quot;</attribute>
+              <attribute datatype='string' name='single-char'>&quot;&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='capability'>
+            <remote-name />
+            <remote-type>0</remote-type>
+            <parent-name>[va-cbsa-locality-lookup.csv]</parent-name>
+            <remote-alias />
+            <aggregation>Count</aggregation>
+            <contains-null>true</contains-null>
+            <attributes>
+              <attribute datatype='string' name='character-set'>&quot;UTF-8&quot;</attribute>
+              <attribute datatype='string' name='collation'>&quot;en_US&quot;</attribute>
+              <attribute datatype='string' name='field-delimiter'>&quot;,&quot;</attribute>
+              <attribute datatype='string' name='header-row'>&quot;true&quot;</attribute>
+              <attribute datatype='string' name='locale'>&quot;en_US&quot;</attribute>
+              <attribute datatype='string' name='single-char'>&quot;&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>year</remote-name>
+            <remote-type>7</remote-type>
+            <local-name>[year]</local-name>
+            <parent-name>[b25003_wide.csv]</parent-name>
+            <remote-alias>year</remote-alias>
+            <ordinal>0</ordinal>
+            <local-type>date</local-type>
+            <aggregation>Year</aggregation>
+            <contains-null>true</contains-null>
+            <collation flag='0' name='LEN_RUS' />
+            <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>locality</remote-name>
+            <remote-type>129</remote-type>
+            <local-name>[locality]</local-name>
+            <parent-name>[b25003_wide.csv]</parent-name>
+            <remote-alias>locality</remote-alias>
+            <ordinal>1</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <scale>1</scale>
+            <width>1073741823</width>
+            <contains-null>true</contains-null>
+            <collation flag='0' name='LEN_RUS' />
+            <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>fips</remote-name>
+            <remote-type>20</remote-type>
+            <local-name>[fips]</local-name>
+            <parent-name>[b25003_wide.csv]</parent-name>
+            <remote-alias>fips</remote-alias>
+            <ordinal>2</ordinal>
+            <local-type>integer</local-type>
+            <aggregation>Sum</aggregation>
+            <contains-null>true</contains-null>
+            <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>race</remote-name>
+            <remote-type>129</remote-type>
+            <local-name>[race]</local-name>
+            <parent-name>[b25003_wide.csv]</parent-name>
+            <remote-alias>race</remote-alias>
+            <ordinal>3</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <scale>1</scale>
+            <width>1073741823</width>
+            <contains-null>true</contains-null>
+            <collation flag='0' name='LEN_RUS' />
+            <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>est_all</remote-name>
+            <remote-type>20</remote-type>
+            <local-name>[est_all]</local-name>
+            <parent-name>[b25003_wide.csv]</parent-name>
+            <remote-alias>est_all</remote-alias>
+            <ordinal>4</ordinal>
+            <local-type>integer</local-type>
+            <aggregation>Sum</aggregation>
+            <contains-null>true</contains-null>
+            <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>est_owner</remote-name>
+            <remote-type>20</remote-type>
+            <local-name>[est_owner]</local-name>
+            <parent-name>[b25003_wide.csv]</parent-name>
+            <remote-alias>est_owner</remote-alias>
+            <ordinal>5</ordinal>
+            <local-type>integer</local-type>
+            <aggregation>Sum</aggregation>
+            <contains-null>true</contains-null>
+            <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>est_renter</remote-name>
+            <remote-type>20</remote-type>
+            <local-name>[est_renter]</local-name>
+            <parent-name>[b25003_wide.csv]</parent-name>
+            <remote-alias>est_renter</remote-alias>
+            <ordinal>6</ordinal>
+            <local-type>integer</local-type>
+            <aggregation>Sum</aggregation>
+            <contains-null>true</contains-null>
+            <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>moe_all</remote-name>
+            <remote-type>20</remote-type>
+            <local-name>[moe_all]</local-name>
+            <parent-name>[b25003_wide.csv]</parent-name>
+            <remote-alias>moe_all</remote-alias>
+            <ordinal>7</ordinal>
+            <local-type>integer</local-type>
+            <aggregation>Sum</aggregation>
+            <contains-null>true</contains-null>
+            <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>moe_owner</remote-name>
+            <remote-type>20</remote-type>
+            <local-name>[moe_owner]</local-name>
+            <parent-name>[b25003_wide.csv]</parent-name>
+            <remote-alias>moe_owner</remote-alias>
+            <ordinal>8</ordinal>
+            <local-type>integer</local-type>
+            <aggregation>Sum</aggregation>
+            <contains-null>true</contains-null>
+            <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>moe_renter</remote-name>
+            <remote-type>20</remote-type>
+            <local-name>[moe_renter]</local-name>
+            <parent-name>[b25003_wide.csv]</parent-name>
+            <remote-alias>moe_renter</remote-alias>
+            <ordinal>9</ordinal>
+            <local-type>integer</local-type>
+            <aggregation>Sum</aggregation>
+            <contains-null>true</contains-null>
+            <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>state</remote-name>
+            <remote-type>129</remote-type>
+            <local-name>[state]</local-name>
+            <parent-name>[va-cbsa-locality-lookup.csv]</parent-name>
+            <remote-alias>state</remote-alias>
+            <ordinal>10</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <scale>1</scale>
+            <width>1073741823</width>
+            <contains-null>true</contains-null>
+            <collation flag='0' name='LEN_RUS' />
+            <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>fips_state</remote-name>
+            <remote-type>20</remote-type>
+            <local-name>[fips_state]</local-name>
+            <parent-name>[va-cbsa-locality-lookup.csv]</parent-name>
+            <remote-alias>fips_state</remote-alias>
+            <ordinal>11</ordinal>
+            <local-type>integer</local-type>
+            <aggregation>Sum</aggregation>
+            <contains-null>true</contains-null>
+            <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>fips_locality</remote-name>
+            <remote-type>20</remote-type>
+            <local-name>[fips_locality]</local-name>
+            <parent-name>[va-cbsa-locality-lookup.csv]</parent-name>
+            <remote-alias>fips_locality</remote-alias>
+            <ordinal>12</ordinal>
+            <local-type>integer</local-type>
+            <aggregation>Sum</aggregation>
+            <contains-null>true</contains-null>
+            <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>fips_full</remote-name>
+            <remote-type>20</remote-type>
+            <local-name>[fips_full]</local-name>
+            <parent-name>[va-cbsa-locality-lookup.csv]</parent-name>
+            <remote-alias>fips_full</remote-alias>
+            <ordinal>13</ordinal>
+            <local-type>integer</local-type>
+            <aggregation>Sum</aggregation>
+            <contains-null>true</contains-null>
+            <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>name_long</remote-name>
+            <remote-type>129</remote-type>
+            <local-name>[name_long]</local-name>
+            <parent-name>[va-cbsa-locality-lookup.csv]</parent-name>
+            <remote-alias>name_long</remote-alias>
+            <ordinal>14</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <scale>1</scale>
+            <width>1073741823</width>
+            <contains-null>true</contains-null>
+            <collation flag='0' name='LEN_RUS' />
+            <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>name_short</remote-name>
+            <remote-type>129</remote-type>
+            <local-name>[name_short]</local-name>
+            <parent-name>[va-cbsa-locality-lookup.csv]</parent-name>
+            <remote-alias>name_short</remote-alias>
+            <ordinal>15</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <scale>1</scale>
+            <width>1073741823</width>
+            <contains-null>true</contains-null>
+            <collation flag='0' name='LEN_RUS' />
+            <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>cbsa_code</remote-name>
+            <remote-type>20</remote-type>
+            <local-name>[cbsa_code]</local-name>
+            <parent-name>[va-cbsa-locality-lookup.csv]</parent-name>
+            <remote-alias>cbsa_code</remote-alias>
+            <ordinal>16</ordinal>
+            <local-type>integer</local-type>
+            <aggregation>Sum</aggregation>
+            <contains-null>true</contains-null>
+            <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>metropolitan_div_code</remote-name>
+            <remote-type>20</remote-type>
+            <local-name>[metropolitan_div_code]</local-name>
+            <parent-name>[va-cbsa-locality-lookup.csv]</parent-name>
+            <remote-alias>metropolitan_div_code</remote-alias>
+            <ordinal>17</ordinal>
+            <local-type>integer</local-type>
+            <aggregation>Sum</aggregation>
+            <contains-null>true</contains-null>
+            <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>cbsa_title</remote-name>
+            <remote-type>129</remote-type>
+            <local-name>[cbsa_title]</local-name>
+            <parent-name>[va-cbsa-locality-lookup.csv]</parent-name>
+            <remote-alias>cbsa_title</remote-alias>
+            <ordinal>18</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <scale>1</scale>
+            <width>1073741823</width>
+            <contains-null>true</contains-null>
+            <collation flag='0' name='LEN_RUS' />
+            <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>central_outlying</remote-name>
+            <remote-type>129</remote-type>
+            <local-name>[central_outlying]</local-name>
+            <parent-name>[va-cbsa-locality-lookup.csv]</parent-name>
+            <remote-alias>central_outlying</remote-alias>
+            <ordinal>19</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <scale>1</scale>
+            <width>1073741823</width>
+            <contains-null>true</contains-null>
+            <collation flag='0' name='LEN_RUS' />
+            <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>metro_micro_nonmetro</remote-name>
+            <remote-type>129</remote-type>
+            <local-name>[metro_micro_nonmetro]</local-name>
+            <parent-name>[va-cbsa-locality-lookup.csv]</parent-name>
+            <remote-alias>metro_micro_nonmetro</remote-alias>
+            <ordinal>20</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <scale>1</scale>
+            <width>1073741823</width>
+            <contains-null>true</contains-null>
+            <collation flag='0' name='LEN_RUS' />
+            <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+          </metadata-record>
+        </metadata-records>
+      </connection>
+      <aliases enabled='yes' />
+      <column caption='Homeownership rate' datatype='real' name='[Calculation_1004302779991048192]' role='measure' type='quantitative'>
+        <calculation class='tableau' formula='SUM([est_owner])/SUM([est_all])' />
+      </column>
+      <column datatype='string' name='[Locality (group)]' role='dimension' semantic-role='' type='nominal'>
+        <calculation class='categorical-bin' column='[locality]' new-bin='true'>
+          <bin default-name='false' value='&quot;Bedford County&quot;'>
+            <value>&quot;Bedford city&quot;</value>
+            <value>&quot;Bedford County&quot;</value>
+          </bin>
+        </calculation>
+      </column>
+      <column datatype='string' name='[Race (group)]' role='dimension' type='nominal'>
+        <calculation class='categorical-bin' column='[race]' new-bin='true'>
+          <bin default-name='false' value='&quot;Another race including multiracial&quot;'>
+            <value>&quot;American Indian and Alaska Native&quot;</value>
+            <value>&quot;Native Hawaiian and Other Pacific Islander&quot;</value>
+            <value>&quot;Some Other Race&quot;</value>
+            <value>&quot;Two or More Races&quot;</value>
+          </bin>
+          <bin default-name='false' value='&quot;White, non-Hispanic&quot;'>
+            <value>&quot;White, Not Hispanic or Latino &quot;</value>
+          </bin>
+        </calculation>
+      </column>
+      <_.fcp.ObjectModelTableType.true...column caption='b25003_wide.csv' datatype='table' name='[__tableau_internal_object_id__].[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]' role='measure' type='quantitative' />
+      <column caption='Cbsa Code' datatype='integer' name='[cbsa_code]' role='dimension' type='ordinal' />
+      <column caption='Cbsa Title' datatype='string' name='[cbsa_title]' role='dimension' type='nominal' />
+      <column caption='Central Outlying' datatype='string' name='[central_outlying]' role='dimension' type='nominal' />
+      <column caption='Est All' datatype='integer' name='[est_all]' role='measure' type='quantitative' />
+      <column caption='Est Owner' datatype='integer' name='[est_owner]' role='measure' type='quantitative' />
+      <column caption='Est Renter' datatype='integer' name='[est_renter]' role='measure' type='quantitative' />
+      <column aggregation='Sum' caption='Fips' datatype='integer' name='[fips]' role='dimension' semantic-role='[County].[Name]' type='ordinal' />
+      <column caption='Fips Full' datatype='integer' name='[fips_full]' role='measure' type='quantitative' />
+      <column caption='Fips Locality' datatype='integer' name='[fips_locality]' role='measure' type='quantitative' />
+      <column caption='Fips State' datatype='integer' name='[fips_state]' role='measure' type='quantitative' />
+      <column caption='Locality' datatype='string' name='[locality]' role='dimension' semantic-role='' type='nominal' />
+      <column caption='Metro Micro Nonmetro' datatype='string' name='[metro_micro_nonmetro]' role='dimension' type='nominal' />
+      <column caption='Metropolitan Div Code' datatype='integer' name='[metropolitan_div_code]' role='dimension' type='ordinal' />
+      <column caption='Moe All' datatype='integer' name='[moe_all]' role='measure' type='quantitative' />
+      <column caption='Moe Owner' datatype='integer' name='[moe_owner]' role='measure' type='quantitative' />
+      <column caption='Moe Renter' datatype='integer' name='[moe_renter]' role='measure' type='quantitative' />
+      <column caption='Name Long' datatype='string' name='[name_long]' role='dimension' type='nominal' />
+      <column caption='Name Short' datatype='string' name='[name_short]' role='dimension' type='nominal' />
+      <column caption='Race' datatype='string' name='[race]' role='dimension' type='nominal' />
+      <column caption='State' datatype='string' name='[state]' role='dimension' semantic-role='[State].[Name]' type='nominal' />
+      <column caption='Year' datatype='date' default-format='*YYYY' name='[year]' role='dimension' type='quantitative' />
+      <group caption='Action (Fips)' hidden='true' name='[Action (Fips)]' name-style='unqualified' user:auto-column='sheet_link'>
+        <groupfilter function='crossjoin'>
+          <groupfilter function='level-members' level='[fips]' />
+        </groupfilter>
+      </group>
+      <group caption='Action (Locality (group))' hidden='true' name='[Action (Locality (group))]' name-style='unqualified' user:auto-column='sheet_link'>
+        <groupfilter function='crossjoin'>
+          <groupfilter function='level-members' level='[Locality (group)]' />
+        </groupfilter>
+      </group>
+      <group caption='Tooltip (Fips)' hidden='true' name='[Tooltip (Fips)]' name-style='unqualified' user:auto-column='sheet_link' user:ui-vit-column='true'>
+        <groupfilter function='crossjoin'>
+          <groupfilter function='level-members' level='[fips]' />
+        </groupfilter>
+      </group>
+      <drill-paths>
+        <drill-path name='State, Fips'>
+          <field>[state]</field>
+          <field>[fips]</field>
+        </drill-path>
+      </drill-paths>
+      <extract _.fcp.ObjectModelExtractV2.true...object-id='' count='-1' enabled='true' units='records'>
+        <connection authentication='auth-none' author-locale='en_US' class='hyper' dbname='G:/Shared drives/sourcebook/sourcebook-evm/sourcebook/40-homeownership/41-homeownership rate/homeownership-rate-race.twb Files/Data/Extracts/federated_1s1owxb0t1qs4l13eiuaq0.hyper' default-settings='yes' schema='Extract' sslmode='' tablename='Extract' update-time='02/15/2022 09:22:37 PM' username=''>
+          <_.fcp.ObjectModelEncapsulateLegacy.false...relation name='Extract' table='[Extract].[Extract]' type='table' />
+          <_.fcp.ObjectModelEncapsulateLegacy.true...relation name='Extract' table='[Extract].[Extract]' type='table' />
+          <refresh>
+            <refresh-event add-from-file-path='b25003_wide' increment-value='%null%' refresh-type='create' rows-inserted='12006' timestamp-start='2022-02-15 21:22:35.981' />
+          </refresh>
+          <metadata-records>
+            <metadata-record class='column'>
+              <remote-name>year</remote-name>
+              <remote-type>133</remote-type>
+              <local-name>[year]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>year</remote-alias>
+              <ordinal>0</ordinal>
+              <family>b25003_wide.csv</family>
+              <local-type>date</local-type>
+              <aggregation>Year</aggregation>
+              <approx-count>10</approx-count>
+              <contains-null>true</contains-null>
+              <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>locality</remote-name>
+              <remote-type>129</remote-type>
+              <local-name>[locality]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>locality</remote-alias>
+              <ordinal>1</ordinal>
+              <family>b25003_wide.csv</family>
+              <local-type>string</local-type>
+              <aggregation>Count</aggregation>
+              <approx-count>133</approx-count>
+              <contains-null>true</contains-null>
+              <collation flag='0' name='LEN_RUS' />
+              <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>fips</remote-name>
+              <remote-type>20</remote-type>
+              <local-name>[fips]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>fips</remote-alias>
+              <ordinal>2</ordinal>
+              <family>b25003_wide.csv</family>
+              <local-type>integer</local-type>
+              <aggregation>Sum</aggregation>
+              <approx-count>133</approx-count>
+              <contains-null>true</contains-null>
+              <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>race</remote-name>
+              <remote-type>129</remote-type>
+              <local-name>[race]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>race</remote-alias>
+              <ordinal>3</ordinal>
+              <family>b25003_wide.csv</family>
+              <local-type>string</local-type>
+              <aggregation>Count</aggregation>
+              <approx-count>9</approx-count>
+              <contains-null>true</contains-null>
+              <collation flag='0' name='LEN_RUS' />
+              <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>est_all</remote-name>
+              <remote-type>20</remote-type>
+              <local-name>[est_all]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>est_all</remote-alias>
+              <ordinal>4</ordinal>
+              <family>b25003_wide.csv</family>
+              <local-type>integer</local-type>
+              <aggregation>Sum</aggregation>
+              <approx-count>2131</approx-count>
+              <contains-null>true</contains-null>
+              <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>est_owner</remote-name>
+              <remote-type>20</remote-type>
+              <local-name>[est_owner]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>est_owner</remote-alias>
+              <ordinal>5</ordinal>
+              <family>b25003_wide.csv</family>
+              <local-type>integer</local-type>
+              <aggregation>Sum</aggregation>
+              <approx-count>1904</approx-count>
+              <contains-null>true</contains-null>
+              <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>est_renter</remote-name>
+              <remote-type>20</remote-type>
+              <local-name>[est_renter]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>est_renter</remote-alias>
+              <ordinal>6</ordinal>
+              <family>b25003_wide.csv</family>
+              <local-type>integer</local-type>
+              <aggregation>Sum</aggregation>
+              <approx-count>1783</approx-count>
+              <contains-null>true</contains-null>
+              <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>moe_all</remote-name>
+              <remote-type>20</remote-type>
+              <local-name>[moe_all]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>moe_all</remote-alias>
+              <ordinal>7</ordinal>
+              <family>b25003_wide.csv</family>
+              <local-type>integer</local-type>
+              <aggregation>Sum</aggregation>
+              <approx-count>793</approx-count>
+              <contains-null>true</contains-null>
+              <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>moe_owner</remote-name>
+              <remote-type>20</remote-type>
+              <local-name>[moe_owner]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>moe_owner</remote-alias>
+              <ordinal>8</ordinal>
+              <family>b25003_wide.csv</family>
+              <local-type>integer</local-type>
+              <aggregation>Sum</aggregation>
+              <approx-count>778</approx-count>
+              <contains-null>true</contains-null>
+              <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>moe_renter</remote-name>
+              <remote-type>20</remote-type>
+              <local-name>[moe_renter]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>moe_renter</remote-alias>
+              <ordinal>9</ordinal>
+              <family>b25003_wide.csv</family>
+              <local-type>integer</local-type>
+              <aggregation>Sum</aggregation>
+              <approx-count>778</approx-count>
+              <contains-null>true</contains-null>
+              <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>state</remote-name>
+              <remote-type>129</remote-type>
+              <local-name>[state]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>state</remote-alias>
+              <ordinal>10</ordinal>
+              <family>va-cbsa-locality-lookup.csv</family>
+              <local-type>string</local-type>
+              <aggregation>Count</aggregation>
+              <approx-count>1</approx-count>
+              <contains-null>true</contains-null>
+              <collation flag='0' name='LEN_RUS' />
+              <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>fips_state</remote-name>
+              <remote-type>20</remote-type>
+              <local-name>[fips_state]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>fips_state</remote-alias>
+              <ordinal>11</ordinal>
+              <family>va-cbsa-locality-lookup.csv</family>
+              <local-type>integer</local-type>
+              <aggregation>Sum</aggregation>
+              <approx-count>1</approx-count>
+              <contains-null>true</contains-null>
+              <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>fips_locality</remote-name>
+              <remote-type>20</remote-type>
+              <local-name>[fips_locality]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>fips_locality</remote-alias>
+              <ordinal>12</ordinal>
+              <family>va-cbsa-locality-lookup.csv</family>
+              <local-type>integer</local-type>
+              <aggregation>Sum</aggregation>
+              <approx-count>133</approx-count>
+              <contains-null>true</contains-null>
+              <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>fips_full</remote-name>
+              <remote-type>20</remote-type>
+              <local-name>[fips_full]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>fips_full</remote-alias>
+              <ordinal>13</ordinal>
+              <family>va-cbsa-locality-lookup.csv</family>
+              <local-type>integer</local-type>
+              <aggregation>Sum</aggregation>
+              <approx-count>133</approx-count>
+              <contains-null>true</contains-null>
+              <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>name_long</remote-name>
+              <remote-type>129</remote-type>
+              <local-name>[name_long]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>name_long</remote-alias>
+              <ordinal>14</ordinal>
+              <family>va-cbsa-locality-lookup.csv</family>
+              <local-type>string</local-type>
+              <aggregation>Count</aggregation>
+              <approx-count>133</approx-count>
+              <contains-null>true</contains-null>
+              <collation flag='0' name='LEN_RUS' />
+              <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>name_short</remote-name>
+              <remote-type>129</remote-type>
+              <local-name>[name_short]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>name_short</remote-alias>
+              <ordinal>15</ordinal>
+              <family>va-cbsa-locality-lookup.csv</family>
+              <local-type>string</local-type>
+              <aggregation>Count</aggregation>
+              <approx-count>129</approx-count>
+              <contains-null>true</contains-null>
+              <collation flag='0' name='LEN_RUS' />
+              <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>cbsa_code</remote-name>
+              <remote-type>20</remote-type>
+              <local-name>[cbsa_code]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>cbsa_code</remote-alias>
+              <ordinal>16</ordinal>
+              <family>va-cbsa-locality-lookup.csv</family>
+              <local-type>integer</local-type>
+              <aggregation>Sum</aggregation>
+              <approx-count>16</approx-count>
+              <contains-null>true</contains-null>
+              <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>metropolitan_div_code</remote-name>
+              <remote-type>20</remote-type>
+              <local-name>[metropolitan_div_code]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>metropolitan_div_code</remote-alias>
+              <ordinal>17</ordinal>
+              <family>va-cbsa-locality-lookup.csv</family>
+              <local-type>integer</local-type>
+              <aggregation>Sum</aggregation>
+              <approx-count>2</approx-count>
+              <contains-null>true</contains-null>
+              <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>cbsa_title</remote-name>
+              <remote-type>129</remote-type>
+              <local-name>[cbsa_title]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>cbsa_title</remote-alias>
+              <ordinal>18</ordinal>
+              <family>va-cbsa-locality-lookup.csv</family>
+              <local-type>string</local-type>
+              <aggregation>Count</aggregation>
+              <approx-count>16</approx-count>
+              <contains-null>true</contains-null>
+              <collation flag='0' name='LEN_RUS' />
+              <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>central_outlying</remote-name>
+              <remote-type>129</remote-type>
+              <local-name>[central_outlying]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>central_outlying</remote-alias>
+              <ordinal>19</ordinal>
+              <family>va-cbsa-locality-lookup.csv</family>
+              <local-type>string</local-type>
+              <aggregation>Count</aggregation>
+              <approx-count>3</approx-count>
+              <contains-null>true</contains-null>
+              <collation flag='0' name='LEN_RUS' />
+              <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+            </metadata-record>
+            <metadata-record class='column'>
+              <remote-name>metro_micro_nonmetro</remote-name>
+              <remote-type>129</remote-type>
+              <local-name>[metro_micro_nonmetro]</local-name>
+              <parent-name>[Extract]</parent-name>
+              <remote-alias>metro_micro_nonmetro</remote-alias>
+              <ordinal>20</ordinal>
+              <family>va-cbsa-locality-lookup.csv</family>
+              <local-type>string</local-type>
+              <aggregation>Count</aggregation>
+              <approx-count>3</approx-count>
+              <contains-null>true</contains-null>
+              <collation flag='0' name='LEN_RUS' />
+              <_.fcp.ObjectModelEncapsulateLegacy.true...object-id>[b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE]</_.fcp.ObjectModelEncapsulateLegacy.true...object-id>
+            </metadata-record>
+          </metadata-records>
+        </connection>
+      </extract>
+      <layout _.fcp.SchemaViewerObjectModel.false...dim-percentage='0.5' _.fcp.SchemaViewerObjectModel.false...measure-percentage='0.4' dim-ordering='alphabetic' measure-ordering='alphabetic' show-structure='true' />
+      <style>
+        <style-rule element='mark'>
+          <encoding attr='color' field='[Race (group)]' type='palette'>
+            <map to='#334a66'>
+              <bucket>&quot;White, non-Hispanic&quot;</bucket>
+            </map>
+            <map to='#66cccc'>
+              <bucket>&quot;Black or African American&quot;</bucket>
+            </map>
+            <map to='#a29dd4'>
+              <bucket>&quot;Hispanic or Latino&quot;</bucket>
+            </map>
+            <map to='#c0327e'>
+              <bucket>&quot;Asian&quot;</bucket>
+            </map>
+            <map to='#e67a54'>
+              <bucket>&quot;Another race including multiracial&quot;</bucket>
+            </map>
+            <map to='#edc948'>
+              <bucket>&quot;All&quot;</bucket>
+            </map>
+          </encoding>
+        </style-rule>
+      </style>
+      <semantic-values>
+        <semantic-value key='[Country].[Name]' value='&quot;United States&quot;' />
+      </semantic-values>
+      <_.fcp.ObjectModelEncapsulateLegacy.true...object-graph>
+        <objects>
+          <object caption='b25003_wide.csv' id='b25003_wide.csv_F23F40723A98470081C0922C2B5ABEFE'>
+            <properties context=''>
+              <relation join='inner' type='join'>
+                <clause type='join'>
+                  <expression op='='>
+                    <expression op='[b25003_wide.csv].[fips]' />
+                    <expression op='[va-cbsa-locality-lookup.csv].[fips_full]' />
+                  </expression>
+                </clause>
+                <relation connection='textscan.13go0k11fb6js01efp75x1ti4c32' name='b25003_wide.csv' table='[b25003_wide#csv]' type='table'>
+                  <columns character-set='UTF-8' header='yes' locale='en_US' separator=','>
+                    <column datatype='date' date-parse-format='yyyy' name='year' ordinal='0' />
+                    <column datatype='string' name='locality' ordinal='1' />
+                    <column datatype='integer' name='fips' ordinal='2' />
+                    <column datatype='string' name='race' ordinal='3' />
+                    <column datatype='integer' name='est_all' ordinal='4' />
+                    <column datatype='integer' name='est_owner' ordinal='5' />
+                    <column datatype='integer' name='est_renter' ordinal='6' />
+                    <column datatype='integer' name='moe_all' ordinal='7' />
+                    <column datatype='integer' name='moe_owner' ordinal='8' />
+                    <column datatype='integer' name='moe_renter' ordinal='9' />
+                  </columns>
+                </relation>
+                <relation connection='textscan.1jgoscx0w94cmi1cfjcb50k9at2e' name='va-cbsa-locality-lookup.csv' table='[va-cbsa-locality-lookup#csv]' type='table'>
+                  <columns character-set='UTF-8' header='yes' locale='en_US' separator=','>
+                    <column datatype='string' name='state' ordinal='0' />
+                    <column datatype='integer' name='fips_state' ordinal='1' />
+                    <column datatype='integer' name='fips_locality' ordinal='2' />
+                    <column datatype='integer' name='fips_full' ordinal='3' />
+                    <column datatype='string' name='name_long' ordinal='4' />
+                    <column datatype='string' name='name_short' ordinal='5' />
+                    <column datatype='integer' name='cbsa_code' ordinal='6' />
+                    <column datatype='integer' name='metropolitan_div_code' ordinal='7' />
+                    <column datatype='string' name='cbsa_title' ordinal='8' />
+                    <column datatype='string' name='central_outlying' ordinal='9' />
+                    <column datatype='string' name='metro_micro_nonmetro' ordinal='10' />
+                  </columns>
+                </relation>
+              </relation>
+            </properties>
+            <properties context='extract'>
+              <relation name='Extract' table='[Extract].[Extract]' type='table' />
+            </properties>
+          </object>
+        </objects>
+      </_.fcp.ObjectModelEncapsulateLegacy.true...object-graph>
+    </datasource>
+  </datasources>
+  <mapsources>
+    <mapsource name='Tableau' />
+  </mapsources>
+  <actions>
+    <action caption='Filter1' name='[Action1_4B1F3ACF23EF4CCC8176B07882996BEF]'>
+      <activation auto-clear='true' type='on-select' />
+      <source dashboard='ho_map_db' type='sheet' />
+      <command command='tsc:tsl-filter'>
+        <param name='exclude' value='ho_map' />
+        <param name='special-fields' value='all' />
+        <param name='target' value='ho_map_db' />
+      </command>
+    </action>
+  </actions>
+  <worksheets>
+    <worksheet name='cbsa'>
+      <layout-options>
+        <title>
+          <formatted-text>
+            <run fontcolor='#555555' fontsize='10' italic='true'>Homeownership rate</run>
+          </formatted-text>
+        </title>
+      </layout-options>
+      <table>
+        <view>
+          <datasources>
+            <datasource caption='b25003_wide' name='federated.1s1owxb0t1qs4l13eiuaq0hwqt3j' />
+          </datasources>
+          <mapsources>
+            <mapsource name='Tableau' />
+          </mapsources>
+          <datasource-dependencies datasource='federated.1s1owxb0t1qs4l13eiuaq0hwqt3j'>
+            <column caption='Homeownership rate' datatype='real' name='[Calculation_1004302779991048192]' role='measure' type='quantitative'>
+              <calculation class='tableau' formula='SUM([est_owner])/SUM([est_all])' />
+            </column>
+            <column datatype='string' name='[Race (group)]' role='dimension' type='nominal'>
+              <calculation class='categorical-bin' column='[race]' new-bin='true'>
+                <bin default-name='false' value='&quot;Another race including multiracial&quot;'>
+                  <value>&quot;American Indian and Alaska Native&quot;</value>
+                  <value>&quot;Native Hawaiian and Other Pacific Islander&quot;</value>
+                  <value>&quot;Some Other Race&quot;</value>
+                  <value>&quot;Two or More Races&quot;</value>
+                </bin>
+                <bin default-name='false' value='&quot;White, non-Hispanic&quot;'>
+                  <value>&quot;White, Not Hispanic or Latino &quot;</value>
+                </bin>
+              </calculation>
+            </column>
+            <column caption='Cbsa Title' datatype='string' name='[cbsa_title]' role='dimension' type='nominal' />
+            <column caption='Est All' datatype='integer' name='[est_all]' role='measure' type='quantitative' />
+            <column caption='Est Owner' datatype='integer' name='[est_owner]' role='measure' type='quantitative' />
+            <column-instance column='[cbsa_title]' derivation='None' name='[none:cbsa_title:nk]' pivot='key' type='nominal' />
+            <column-instance column='[race]' derivation='None' name='[none:race:nk]' pivot='key' type='nominal' />
+            <column caption='Race' datatype='string' name='[race]' role='dimension' type='nominal' />
+            <column-instance column='[est_owner]' derivation='Sum' name='[sum:est_owner:qk]' pivot='key' type='quantitative' />
+            <column-instance column='[Calculation_1004302779991048192]' derivation='User' name='[usr:Calculation_1004302779991048192:qk]' pivot='key' type='quantitative' />
+            <column caption='Year' datatype='date' default-format='*YYYY' name='[year]' role='dimension' type='quantitative' />
+            <column-instance column='[year]' derivation='Year' name='[yr:year:ok]' pivot='key' type='ordinal' />
+          </datasource-dependencies>
+          <filter class='categorical' column='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Race (group)]'>
+            <groupfilter from='&quot;Another race including multiracial&quot;' function='range' level='[Race (group)]' to='&quot;White, non-Hispanic&quot;' user:ui-domain='relevant' user:ui-enumeration='inclusive' user:ui-marker='enumerate' />
+          </filter>
+          <computed-sort column='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Race (group)]' direction='DESC' using='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]' />
+          <filter class='categorical' column='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[none:cbsa_title:nk]'>
+            <groupfilter function='member' level='[none:cbsa_title:nk]' member='&quot;Big Stone Gap, VA&quot;' user:ui-domain='relevant' user:ui-enumeration='inclusive' user:ui-marker='enumerate' />
+          </filter>
+          <filter class='categorical' column='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[none:race:nk]'>
+            <groupfilter function='except' user:ui-domain='relevant' user:ui-enumeration='exclusive' user:ui-marker='enumerate'>
+              <groupfilter function='level-members' level='[none:race:nk]' />
+              <groupfilter function='member' level='[none:race:nk]' member='&quot;All&quot;' />
+            </groupfilter>
+          </filter>
+          <slices>
+            <column>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[none:race:nk]</column>
+            <column>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Race (group)]</column>
+            <column>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[none:cbsa_title:nk]</column>
+          </slices>
+          <aggregation value='true' />
+        </view>
+        <style>
+          <style-rule element='axis'>
+            <format attr='title' class='0' field='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]' scope='rows' value='' />
+          </style-rule>
+          <style-rule element='cell'>
+            <format attr='text-format' field='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]' value='p0%' />
+          </style-rule>
+          <style-rule element='header'>
+            <format attr='height' field='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Race (group)]' value='52' />
+          </style-rule>
+          <style-rule element='label'>
+            <format attr='text-format' field='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]' value='p0%' />
+          </style-rule>
+          <style-rule element='worksheet'>
+            <format attr='display-field-labels' scope='cols' value='false' />
+          </style-rule>
+          <style-rule element='header-div'>
+            <format attr='stroke-size' scope='rows' value='0' />
+            <format attr='line-visibility' scope='rows' value='off' />
+            <format attr='stroke-size' scope='cols' value='0' />
+            <format attr='line-visibility' scope='cols' value='off' />
+          </style-rule>
+          <style-rule element='legend-title-text'>
+            <format attr='color' field='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Race (group)]' value='Race and ethnicity' />
+          </style-rule>
+          <style-rule element='map'>
+            <format attr='washout' value='0.0' />
+          </style-rule>
+          <style-rule element='quick-filter'>
+            <format attr='title' field='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[none:cbsa_title:nk]' value='Select CBSA:' />
+          </style-rule>
+        </style>
+        <panes>
+          <pane selection-relaxation-option='selection-relaxation-allow'>
+            <view>
+              <breakdown value='auto' />
+            </view>
+            <mark class='Automatic' />
+            <encodings>
+              <color column='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Race (group)]' />
+              <tooltip column='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[sum:est_owner:qk]' />
+            </encodings>
+            <customized-tooltip>
+              <formatted-text>
+                <run fontcolor='#787878'>Race or ethnicity:&#9;</run>
+                <run bold='true'><![CDATA[<[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Race (group)]>]]></run>
+                <run>Æ&#10;</run>
+                <run fontcolor='#787878'>Year:&#9;</run>
+                <run bold='true'><![CDATA[<[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[yr:year:ok]>]]></run>
+                <run>Æ&#10;</run>
+                <run fontcolor='#787878'>Total homeowners:&#9;</run>
+                <run bold='true'><![CDATA[<[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[sum:est_owner:qk]>]]></run>
+                <run>Æ&#10;</run>
+                <run fontcolor='#787878'>Homeownership rate:&#9;</run>
+                <run bold='true'><![CDATA[<[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]>]]></run>
+              </formatted-text>
+            </customized-tooltip>
+          </pane>
+        </panes>
+        <rows>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]</rows>
+        <cols>([federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Race (group)] / [federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[yr:year:ok])</cols>
+      </table>
+      <simple-id uuid='{575EE7E6-C9DF-47FF-BEED-17D30074D68B}' />
+    </worksheet>
+    <worksheet name='ho_map'>
+      <layout-options>
+        <title>
+          <formatted-text>
+            <run fontname='Tableau Semibold' fontsize='14'>Virginia homeownership rate</run>
+          </formatted-text>
+        </title>
+      </layout-options>
+      <table>
+        <view>
+          <datasources>
+            <datasource caption='b25003_wide' name='federated.1s1owxb0t1qs4l13eiuaq0hwqt3j' />
+          </datasources>
+          <mapsources>
+            <mapsource name='Tableau' />
+          </mapsources>
+          <datasource-dependencies datasource='federated.1s1owxb0t1qs4l13eiuaq0hwqt3j'>
+            <column caption='Homeownership rate' datatype='real' name='[Calculation_1004302779991048192]' role='measure' type='quantitative'>
+              <calculation class='tableau' formula='SUM([est_owner])/SUM([est_all])' />
+            </column>
+            <column datatype='string' name='[Locality (group)]' role='dimension' semantic-role='' type='nominal'>
+              <calculation class='categorical-bin' column='[locality]' new-bin='true'>
+                <bin default-name='false' value='&quot;Bedford County&quot;'>
+                  <value>&quot;Bedford city&quot;</value>
+                  <value>&quot;Bedford County&quot;</value>
+                </bin>
+              </calculation>
+            </column>
+            <column-instance column='[locality]' derivation='Attribute' name='[attr:locality:nk]' pivot='key' type='nominal' />
+            <column-instance column='[year]' derivation='Attribute' name='[attr:year:qk]' pivot='key' type='quantitative' />
+            <column caption='Est All' datatype='integer' name='[est_all]' role='measure' type='quantitative' />
+            <column caption='Est Owner' datatype='integer' name='[est_owner]' role='measure' type='quantitative' />
+            <column aggregation='Sum' caption='Fips' datatype='integer' name='[fips]' role='dimension' semantic-role='[County].[Name]' type='ordinal' />
+            <column caption='Locality' datatype='string' name='[locality]' role='dimension' semantic-role='' type='nominal' />
+            <column-instance column='[fips]' derivation='None' name='[none:fips:ok]' pivot='key' type='ordinal' />
+            <column-instance column='[race]' derivation='None' name='[none:race:nk]' pivot='key' type='nominal' />
+            <column caption='Race' datatype='string' name='[race]' role='dimension' type='nominal' />
+            <column-instance column='[Calculation_1004302779991048192]' derivation='User' name='[usr:Calculation_1004302779991048192:qk]' pivot='key' type='quantitative' />
+            <column caption='Year' datatype='date' default-format='*YYYY' name='[year]' role='dimension' type='quantitative' />
+            <column-instance column='[year]' derivation='Year' name='[yr:year:ok]' pivot='key' type='ordinal' />
+          </datasource-dependencies>
+          <filter class='categorical' column='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Locality (group)]'>
+            <groupfilter function='level-members' level='[Locality (group)]' user:ui-enumeration='all' user:ui-marker='enumerate' />
+          </filter>
+          <filter class='categorical' column='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[none:race:nk]'>
+            <groupfilter function='member' level='[none:race:nk]' member='&quot;All&quot;' user:ui-domain='relevant' user:ui-enumeration='inclusive' user:ui-marker='enumerate' />
+          </filter>
+          <filter class='categorical' column='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[yr:year:ok]'>
+            <groupfilter function='member' level='[yr:year:ok]' member='2019' user:ui-domain='relevant' user:ui-enumeration='inclusive' user:ui-marker='enumerate' />
+          </filter>
+          <slices>
+            <column>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[yr:year:ok]</column>
+            <column>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[none:race:nk]</column>
+            <column>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Locality (group)]</column>
+          </slices>
+          <aggregation value='true' />
+        </view>
+        <style>
+          <style-rule element='cell'>
+            <format attr='text-format' field='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]' value='p0.0%' />
+          </style-rule>
+          <style-rule element='mark'>
+            <encoding attr='color' field='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]' palette='HFV Desert-Grass Diverging' type='interpolated' />
+          </style-rule>
+          <style-rule element='legend-title-text'>
+            <format attr='color' field='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]' value='Homeownership rate'>
+              <formatted-text>
+                <run>Homeownership rate</run>
+              </formatted-text>
+            </format>
+          </style-rule>
+          <style-rule element='map'>
+            <format attr='washout' value='0.0' />
+          </style-rule>
+          <style-rule element='quick-filter'>
+            <format attr='title' field='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[yr:year:ok]' value='Select year:'>
+              <formatted-text>
+                <run>Select year:</run>
+              </formatted-text>
+            </format>
+          </style-rule>
+        </style>
+        <panes>
+          <pane selection-relaxation-option='selection-relaxation-disallow'>
+            <view>
+              <breakdown value='auto' />
+            </view>
+            <mark class='Multipolygon' />
+            <encodings>
+              <color column='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]' />
+              <lod column='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[none:fips:ok]' />
+              <tooltip column='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[attr:locality:nk]' />
+              <tooltip column='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[attr:year:qk]' />
+              <geometry column='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Geometry (generated)]' />
+            </encodings>
+            <customized-tooltip show-buttons='false'>
+              <formatted-text>
+                <run fontcolor='#787878'>Locality:&#9;</run>
+                <run bold='true'><![CDATA[<[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[attr:locality:nk]>]]></run>
+                <run>Æ&#10;</run>
+                <run fontcolor='#787878'><![CDATA[Homeownership rate (<[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[attr:year:qk]>):	]]></run>
+                <run bold='true'><![CDATA[<[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]>]]></run>
+                <run>Æ&#10;</run>
+                <run bold='true'><![CDATA[<Sheet name="ho_time" maxwidth="300" maxheight="300" filter="<All Fields>">]]></run>
+                <run>Æ&#10;</run>
+              </formatted-text>
+            </customized-tooltip>
+            <style>
+              <style-rule element='mark'>
+                <format attr='mark-labels-cull' value='true' />
+                <format attr='mark-labels-show' value='false' />
+              </style-rule>
+            </style>
+          </pane>
+        </panes>
+        <rows>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Latitude (generated)]</rows>
+        <cols>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Longitude (generated)]</cols>
+      </table>
+      <simple-id uuid='{39269614-79DD-4BF1-8446-7B06D272AC62}' />
+    </worksheet>
+    <worksheet name='ho_time'>
+      <layout-options>
+        <title>
+          <formatted-text />
+        </title>
+      </layout-options>
+      <repository-location id='ho_time' path='/workbooks/Sourcebook-Homeowershipgap' revision='' />
+      <table>
+        <view>
+          <datasources>
+            <datasource caption='b25003_wide' name='federated.1s1owxb0t1qs4l13eiuaq0hwqt3j' />
+          </datasources>
+          <mapsources>
+            <mapsource name='Tableau' />
+          </mapsources>
+          <datasource-dependencies datasource='federated.1s1owxb0t1qs4l13eiuaq0hwqt3j'>
+            <column caption='Homeownership rate' datatype='real' name='[Calculation_1004302779991048192]' role='measure' type='quantitative'>
+              <calculation class='tableau' formula='SUM([est_owner])/SUM([est_all])' />
+            </column>
+            <column datatype='string' name='[Locality (group)]' role='dimension' semantic-role='' type='nominal'>
+              <calculation class='categorical-bin' column='[locality]' new-bin='true'>
+                <bin default-name='false' value='&quot;Bedford County&quot;'>
+                  <value>&quot;Bedford city&quot;</value>
+                  <value>&quot;Bedford County&quot;</value>
+                </bin>
+              </calculation>
+            </column>
+            <column caption='Est All' datatype='integer' name='[est_all]' role='measure' type='quantitative' />
+            <column caption='Est Owner' datatype='integer' name='[est_owner]' role='measure' type='quantitative' />
+            <column aggregation='Sum' caption='Fips' datatype='integer' name='[fips]' role='dimension' semantic-role='[County].[Name]' type='ordinal' />
+            <column caption='Locality' datatype='string' name='[locality]' role='dimension' semantic-role='' type='nominal' />
+            <column-instance column='[race]' derivation='None' name='[none:race:nk]' pivot='key' type='nominal' />
+            <column caption='Race' datatype='string' name='[race]' role='dimension' type='nominal' />
+            <column-instance column='[year]' derivation='Year-Trunc' name='[tyr:year:ok]' pivot='key' type='ordinal' />
+            <column-instance column='[Calculation_1004302779991048192]' derivation='User' name='[usr:Calculation_1004302779991048192:qk]' pivot='key' type='quantitative' />
+            <column caption='Year' datatype='date' default-format='*YYYY' name='[year]' role='dimension' type='quantitative' />
+          </datasource-dependencies>
+          <filter class='categorical' column='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Action (Fips)]'>
+            <groupfilter function='level-members' level='[fips]' user:ui-action-filter='[Action1_4B1F3ACF23EF4CCC8176B07882996BEF]' user:ui-enumeration='all' user:ui-marker='enumerate' />
+          </filter>
+          <filter class='categorical' column='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Action (Locality (group))]'>
+            <groupfilter function='level-members' level='[Locality (group)]' user:ui-action-filter='[Action1_4B1F3ACF23EF4CCC8176B07882996BEF]' user:ui-enumeration='all' user:ui-marker='enumerate' />
+          </filter>
+          <filter class='categorical' column='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Tooltip (Fips)]'>
+            <groupfilter function='level-members' level='[fips]' user:ui-action-filter='[Action - ho_time]' user:ui-enumeration='all' user:ui-marker='enumerate' />
+          </filter>
+          <filter class='categorical' column='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[none:race:nk]'>
+            <groupfilter function='member' level='[none:race:nk]' member='&quot;All&quot;' user:ui-domain='relevant' user:ui-enumeration='inclusive' user:ui-marker='enumerate' />
+          </filter>
+          <slices>
+            <column>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[none:race:nk]</column>
+            <column>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Action (Fips)]</column>
+            <column>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Action (Locality (group))]</column>
+            <column>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Tooltip (Fips)]</column>
+          </slices>
+          <aggregation value='true' />
+        </view>
+        <style>
+          <style-rule element='axis'>
+            <encoding attr='space' class='0' domain-expand='false' field='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]' field-type='quantitative' scope='rows' type='space' />
+            <format attr='title' class='0' field='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]' scope='rows' value='' />
+            <format attr='height' field='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[tyr:year:ok]' value='31' />
+          </style-rule>
+          <style-rule element='cell'>
+            <format attr='text-format' field='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]' value='p0.0%' />
+            <format attr='width' field='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[tyr:year:ok]' value='23' />
+          </style-rule>
+          <style-rule element='label'>
+            <format attr='font-size' field='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[tyr:year:ok]' value='8' />
+            <format attr='font-size' field='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]' value='8' />
+            <format attr='text-format' field='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]' value='p0%' />
+            <format attr='text-orientation' field='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[tyr:year:ok]' value='-90' />
+          </style-rule>
+          <style-rule element='mark'>
+            <encoding attr='color' field='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]' palette='HFV Desert-Grass Diverging' type='interpolated' />
+          </style-rule>
+          <style-rule element='worksheet'>
+            <format attr='display-field-labels' scope='cols' value='false' />
+          </style-rule>
+          <style-rule element='map'>
+            <format attr='washout' value='0.0' />
+          </style-rule>
+        </style>
+        <panes>
+          <pane id='3' selection-relaxation-option='selection-relaxation-allow'>
+            <view>
+              <breakdown value='auto' />
+            </view>
+            <mark class='Automatic' />
+            <encodings>
+              <color column='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]' />
+            </encodings>
+            <style>
+              <style-rule element='cell'>
+                <format attr='vertical-align' value='auto' />
+                <format attr='text-align' value='right' />
+              </style-rule>
+              <style-rule element='datalabel'>
+                <format attr='color-mode' value='match' />
+                <format attr='font-family' value='Tableau Semibold' />
+                <format attr='font-size' value='9' />
+              </style-rule>
+              <style-rule element='mark'>
+                <format attr='mark-labels-show' value='true' />
+                <format attr='mark-labels-mode' value='range' />
+                <format attr='mark-labels-cull' value='true' />
+              </style-rule>
+              <style-rule element='pane'>
+                <format attr='minwidth' value='-1' />
+                <format attr='maxwidth' value='-1' />
+              </style-rule>
+            </style>
+          </pane>
+        </panes>
+        <rows>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]</rows>
+        <cols>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[tyr:year:ok]</cols>
+      </table>
+      <simple-id uuid='{019D916C-2A79-4435-8998-5762F83FB1B8}' />
+    </worksheet>
+    <worksheet name='locality'>
+      <layout-options>
+        <title>
+          <formatted-text>
+            <run>&lt;</run>
+            <run>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Locality (group)]</run>
+            <run>&gt;</run>
+          </formatted-text>
+        </title>
+      </layout-options>
+      <table>
+        <view>
+          <datasources>
+            <datasource caption='b25003_wide' name='federated.1s1owxb0t1qs4l13eiuaq0hwqt3j' />
+          </datasources>
+          <mapsources>
+            <mapsource name='Tableau' />
+          </mapsources>
+          <datasource-dependencies datasource='federated.1s1owxb0t1qs4l13eiuaq0hwqt3j'>
+            <column caption='Homeownership rate' datatype='real' name='[Calculation_1004302779991048192]' role='measure' type='quantitative'>
+              <calculation class='tableau' formula='SUM([est_owner])/SUM([est_all])' />
+            </column>
+            <column datatype='string' name='[Locality (group)]' role='dimension' semantic-role='' type='nominal'>
+              <calculation class='categorical-bin' column='[locality]' new-bin='true'>
+                <bin default-name='false' value='&quot;Bedford County&quot;'>
+                  <value>&quot;Bedford city&quot;</value>
+                  <value>&quot;Bedford County&quot;</value>
+                </bin>
+              </calculation>
+            </column>
+            <column datatype='string' name='[Race (group)]' role='dimension' type='nominal'>
+              <calculation class='categorical-bin' column='[race]' new-bin='true'>
+                <bin default-name='false' value='&quot;Another race including multiracial&quot;'>
+                  <value>&quot;American Indian and Alaska Native&quot;</value>
+                  <value>&quot;Native Hawaiian and Other Pacific Islander&quot;</value>
+                  <value>&quot;Some Other Race&quot;</value>
+                  <value>&quot;Two or More Races&quot;</value>
+                </bin>
+                <bin default-name='false' value='&quot;White, non-Hispanic&quot;'>
+                  <value>&quot;White, Not Hispanic or Latino &quot;</value>
+                </bin>
+              </calculation>
+            </column>
+            <column caption='Est All' datatype='integer' name='[est_all]' role='measure' type='quantitative' />
+            <column caption='Est Owner' datatype='integer' name='[est_owner]' role='measure' type='quantitative' />
+            <column caption='Locality' datatype='string' name='[locality]' role='dimension' semantic-role='' type='nominal' />
+            <column caption='Name Long' datatype='string' name='[name_long]' role='dimension' type='nominal' />
+            <column-instance column='[name_long]' derivation='None' name='[none:name_long:nk]' pivot='key' type='nominal' />
+            <column caption='Race' datatype='string' name='[race]' role='dimension' type='nominal' />
+            <column-instance column='[est_owner]' derivation='Sum' name='[sum:est_owner:qk]' pivot='key' type='quantitative' />
+            <column-instance column='[Calculation_1004302779991048192]' derivation='User' name='[usr:Calculation_1004302779991048192:qk]' pivot='key' type='quantitative' />
+            <column caption='Year' datatype='date' default-format='*YYYY' name='[year]' role='dimension' type='quantitative' />
+            <column-instance column='[year]' derivation='Year' name='[yr:year:ok]' pivot='key' type='ordinal' />
+          </datasource-dependencies>
+          <filter class='categorical' column='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Race (group)]'>
+            <groupfilter from='&quot;Another race including multiracial&quot;' function='range' level='[Race (group)]' to='&quot;White, non-Hispanic&quot;' user:ui-domain='relevant' user:ui-enumeration='inclusive' user:ui-marker='enumerate' />
+          </filter>
+          <computed-sort column='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Race (group)]' direction='DESC' using='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]' />
+          <filter class='categorical' column='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[none:name_long:nk]'>
+            <groupfilter function='member' level='[none:name_long:nk]' member='&quot;Accomack County&quot;' user:ui-domain='relevant' user:ui-enumeration='inclusive' user:ui-marker='enumerate' />
+          </filter>
+          <filter class='quantitative' column='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]' included-values='non-null' />
+          <filter class='categorical' column='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[yr:year:ok]'>
+            <groupfilter function='level-members' level='[yr:year:ok]' />
+          </filter>
+          <slices>
+            <column>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Race (group)]</column>
+            <column>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[none:name_long:nk]</column>
+            <column>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]</column>
+            <column>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[yr:year:ok]</column>
+          </slices>
+          <aggregation value='true' />
+        </view>
+        <style>
+          <style-rule element='axis'>
+            <format attr='title' class='0' field='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]' scope='rows' value='' />
+          </style-rule>
+          <style-rule element='cell'>
+            <format attr='text-format' field='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]' value='p0%' />
+          </style-rule>
+          <style-rule element='header'>
+            <format attr='height' field='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Race (group)]' value='52' />
+          </style-rule>
+          <style-rule element='label'>
+            <format attr='text-format' field='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]' value='p0%' />
+          </style-rule>
+          <style-rule element='worksheet'>
+            <format attr='display-field-labels' scope='cols' value='false' />
+          </style-rule>
+          <style-rule element='header-div'>
+            <format attr='stroke-size' scope='rows' value='0' />
+            <format attr='line-visibility' scope='rows' value='off' />
+            <format attr='stroke-size' scope='cols' value='0' />
+            <format attr='line-visibility' scope='cols' value='off' />
+          </style-rule>
+          <style-rule element='legend-title-text'>
+            <format attr='color' field='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Race (group)]' value='Race and ethnicity'>
+              <formatted-text>
+                <run>Race and ethnicity</run>
+              </formatted-text>
+            </format>
+          </style-rule>
+          <style-rule element='map'>
+            <format attr='washout' value='0.0' />
+          </style-rule>
+          <style-rule element='quick-filter'>
+            <format attr='title' field='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[none:name_long:nk]' value='Select locality:'>
+              <formatted-text>
+                <run>Select locality:</run>
+              </formatted-text>
+            </format>
+          </style-rule>
+        </style>
+        <panes>
+          <pane selection-relaxation-option='selection-relaxation-allow'>
+            <view>
+              <breakdown value='auto' />
+            </view>
+            <mark class='Automatic' />
+            <encodings>
+              <color column='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Race (group)]' />
+              <tooltip column='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[sum:est_owner:qk]' />
+            </encodings>
+            <customized-tooltip>
+              <formatted-text>
+                <run fontcolor='#787878'>Race or ethnicity:&#9;</run>
+                <run bold='true'><![CDATA[<[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Race (group)]>]]></run>
+                <run>Æ&#10;</run>
+                <run fontcolor='#787878'>Year:&#9;</run>
+                <run bold='true'><![CDATA[<[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[yr:year:ok]>]]></run>
+                <run>Æ&#10;</run>
+                <run fontcolor='#787878'>Total homeowners:&#9;</run>
+                <run bold='true'><![CDATA[<[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[sum:est_owner:qk]>]]></run>
+                <run>Æ&#10;</run>
+                <run fontcolor='#787878'>Homeownership rate:&#9;</run>
+                <run bold='true'><![CDATA[<[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]>]]></run>
+              </formatted-text>
+            </customized-tooltip>
+          </pane>
+        </panes>
+        <rows>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]</rows>
+        <cols>([federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Race (group)] / [federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[yr:year:ok])</cols>
+      </table>
+      <simple-id uuid='{D58C7913-95EC-401C-AFFA-24C70064BB1C}' />
+    </worksheet>
+    <worksheet name='statewide'>
+      <layout-options>
+        <title>
+          <formatted-text>
+            <run>&lt;</run>
+            <run>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Locality (group)]</run>
+            <run>&gt;</run>
+          </formatted-text>
+        </title>
+      </layout-options>
+      <table>
+        <view>
+          <datasources>
+            <datasource caption='b25003_wide' name='federated.1s1owxb0t1qs4l13eiuaq0hwqt3j' />
+          </datasources>
+          <mapsources>
+            <mapsource name='Tableau' />
+          </mapsources>
+          <datasource-dependencies datasource='federated.1s1owxb0t1qs4l13eiuaq0hwqt3j'>
+            <column caption='Homeownership rate' datatype='real' name='[Calculation_1004302779991048192]' role='measure' type='quantitative'>
+              <calculation class='tableau' formula='SUM([est_owner])/SUM([est_all])' />
+            </column>
+            <column datatype='string' name='[Locality (group)]' role='dimension' semantic-role='' type='nominal'>
+              <calculation class='categorical-bin' column='[locality]' new-bin='true'>
+                <bin default-name='false' value='&quot;Bedford County&quot;'>
+                  <value>&quot;Bedford city&quot;</value>
+                  <value>&quot;Bedford County&quot;</value>
+                </bin>
+              </calculation>
+            </column>
+            <column datatype='string' name='[Race (group)]' role='dimension' type='nominal'>
+              <calculation class='categorical-bin' column='[race]' new-bin='true'>
+                <bin default-name='false' value='&quot;Another race including multiracial&quot;'>
+                  <value>&quot;American Indian and Alaska Native&quot;</value>
+                  <value>&quot;Native Hawaiian and Other Pacific Islander&quot;</value>
+                  <value>&quot;Some Other Race&quot;</value>
+                  <value>&quot;Two or More Races&quot;</value>
+                </bin>
+                <bin default-name='false' value='&quot;White, non-Hispanic&quot;'>
+                  <value>&quot;White, Not Hispanic or Latino &quot;</value>
+                </bin>
+              </calculation>
+            </column>
+            <column caption='Est All' datatype='integer' name='[est_all]' role='measure' type='quantitative' />
+            <column caption='Est Owner' datatype='integer' name='[est_owner]' role='measure' type='quantitative' />
+            <column caption='Locality' datatype='string' name='[locality]' role='dimension' semantic-role='' type='nominal' />
+            <column caption='Race' datatype='string' name='[race]' role='dimension' type='nominal' />
+            <column-instance column='[est_owner]' derivation='Sum' name='[sum:est_owner:qk]' pivot='key' type='quantitative' />
+            <column-instance column='[Calculation_1004302779991048192]' derivation='User' name='[usr:Calculation_1004302779991048192:qk]' pivot='key' type='quantitative' />
+            <column caption='Year' datatype='date' default-format='*YYYY' name='[year]' role='dimension' type='quantitative' />
+            <column-instance column='[year]' derivation='Year' name='[yr:year:ok]' pivot='key' type='ordinal' />
+          </datasource-dependencies>
+          <filter class='categorical' column='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Race (group)]'>
+            <groupfilter from='&quot;Another race including multiracial&quot;' function='range' level='[Race (group)]' to='&quot;White, non-Hispanic&quot;' user:ui-domain='relevant' user:ui-enumeration='inclusive' user:ui-marker='enumerate' />
+          </filter>
+          <computed-sort column='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Race (group)]' direction='DESC' using='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]' />
+          <slices>
+            <column>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Race (group)]</column>
+          </slices>
+          <aggregation value='true' />
+        </view>
+        <style>
+          <style-rule element='axis'>
+            <format attr='title' class='0' field='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]' scope='rows' value='' />
+            <encoding attr='space' class='0' domain-expand='false' field='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]' field-type='quantitative' scope='rows' type='space' />
+          </style-rule>
+          <style-rule element='cell'>
+            <format attr='text-format' field='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]' value='p0%' />
+          </style-rule>
+          <style-rule element='header'>
+            <format attr='height' field='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Race (group)]' value='52' />
+          </style-rule>
+          <style-rule element='label'>
+            <format attr='text-format' field='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]' value='p0%' />
+          </style-rule>
+          <style-rule element='worksheet'>
+            <format attr='display-field-labels' scope='cols' value='false' />
+          </style-rule>
+          <style-rule element='header-div'>
+            <format attr='stroke-size' scope='rows' value='0' />
+            <format attr='line-visibility' scope='rows' value='off' />
+            <format attr='stroke-size' scope='cols' value='0' />
+            <format attr='line-visibility' scope='cols' value='off' />
+          </style-rule>
+          <style-rule element='legend-title-text'>
+            <format attr='color' field='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Race (group)]' value='Race and ethnicity' />
+          </style-rule>
+          <style-rule element='map'>
+            <format attr='washout' value='0.0' />
+          </style-rule>
+        </style>
+        <panes>
+          <pane selection-relaxation-option='selection-relaxation-allow'>
+            <view>
+              <breakdown value='auto' />
+            </view>
+            <mark class='Automatic' />
+            <encodings>
+              <color column='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Race (group)]' />
+              <tooltip column='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[sum:est_owner:qk]' />
+            </encodings>
+            <customized-tooltip>
+              <formatted-text>
+                <run fontcolor='#787878'>Race or ethnicity:&#9;</run>
+                <run bold='true'><![CDATA[<[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Race (group)]>]]></run>
+                <run>Æ&#10;</run>
+                <run fontcolor='#787878'>Year:&#9;</run>
+                <run bold='true'><![CDATA[<[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[yr:year:ok]>]]></run>
+                <run>Æ&#10;</run>
+                <run fontcolor='#787878'>Total homeowners:&#9;</run>
+                <run bold='true'><![CDATA[<[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[sum:est_owner:qk]>]]></run>
+                <run>Æ&#10;</run>
+                <run fontcolor='#787878'>Homeownership rate:&#9;</run>
+                <run bold='true'><![CDATA[<[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]>]]></run>
+              </formatted-text>
+            </customized-tooltip>
+          </pane>
+        </panes>
+        <rows>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]</rows>
+        <cols>([federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Race (group)] / [federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[yr:year:ok])</cols>
+      </table>
+      <simple-id uuid='{832E3D15-8D43-408E-86A2-0B9277681D62}' />
+    </worksheet>
+  </worksheets>
+  <dashboards>
+    <dashboard _.fcp.AccessibleZoneTabOrder.true...enable-sort-zone-taborder='true' name='CBSA'>
+      <repository-location derived-from='https://public.tableau.com/workbooks/Sourcebook-Homeowershipgap/CBSA?rev=' id='CBSA' path='/workbooks/Sourcebook-Homeowershipgap' revision='' />
+      <style />
+      <size maxheight='500' maxwidth='800' sizing-mode='range' />
+      <datasources>
+        <datasource caption='b25003_wide' name='federated.1s1owxb0t1qs4l13eiuaq0hwqt3j' />
+      </datasources>
+      <datasource-dependencies datasource='federated.1s1owxb0t1qs4l13eiuaq0hwqt3j'>
+        <column caption='Cbsa Title' datatype='string' name='[cbsa_title]' role='dimension' type='nominal' />
+        <column-instance column='[cbsa_title]' derivation='None' name='[none:cbsa_title:nk]' pivot='key' type='nominal' />
+      </datasource-dependencies>
+      <zones>
+        <zone h='100000' id='4' type-v2='layout-basic' w='100000' x='0' y='0'>
+          <zone h='96800' id='37' param='horz' type-v2='layout-flow' w='98000' x='1000' y='1600'>
+            <zone h='96800' id='25' param='horz' type-v2='layout-flow' w='76625' x='1000' y='1600'>
+              <zone h='96800' id='23' type-v2='layout-basic' w='76625' x='1000' y='1600'>
+                <zone forceUpdate='true' h='6400' id='11' type-v2='text' w='76625' x='1000' y='1600'>
+                  <formatted-text>
+                    <run fontcolor='#333333' fontname='Tableau Semibold' fontsize='14'>Homeownership rate by race and ethnicity</run>
+                  </formatted-text>
+                  <zone-style>
+                    <format attr='border-color' value='#000000' />
+                    <format attr='border-style' value='none' />
+                    <format attr='border-width' value='0' />
+                    <format attr='margin' value='4' />
+                  </zone-style>
+                </zone>
+                <zone h='90400' id='35' name='cbsa' show-title='false' w='76625' x='1000' y='8000'>
+                  <zone-style>
+                    <format attr='border-color' value='#000000' />
+                    <format attr='border-style' value='none' />
+                    <format attr='border-width' value='0' />
+                    <format attr='margin' value='4' />
+                  </zone-style>
+                </zone>
+              </zone>
+            </zone>
+            <zone fixed-size='171' h='96800' id='36' is-fixed='true' param='vert' type-v2='layout-flow' w='21375' x='77625' y='1600'>
+              <zone h='10400' id='39' mode='dropdown' name='cbsa' param='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[none:cbsa_title:nk]' show-all='false' type-v2='filter' values='database' w='21375' x='77625' y='1600'>
+                <zone-style>
+                  <format attr='border-color' value='#000000' />
+                  <format attr='border-style' value='none' />
+                  <format attr='border-width' value='0' />
+                  <format attr='margin' value='4' />
+                </zone-style>
+              </zone>
+              <zone h='67800' id='41' type-v2='empty' w='21375' x='77625' y='12000'>
+                <zone-style>
+                  <format attr='border-color' value='#000000' />
+                  <format attr='border-style' value='none' />
+                  <format attr='border-width' value='0' />
+                  <format attr='margin' value='4' />
+                </zone-style>
+              </zone>
+              <zone forceUpdate='true' h='18600' id='12' type-v2='text' w='21375' x='77625' y='79800'>
+                <formatted-text>
+                  <run bold='true'>Source: </run>
+                  <run>U.S. Census Bureau, American Community Survey, 2010-2019 5-year estimates, Table B25003B-I.</run>
+                </formatted-text>
+                <zone-style>
+                  <format attr='border-color' value='#000000' />
+                  <format attr='border-style' value='none' />
+                  <format attr='border-width' value='0' />
+                  <format attr='margin' value='4' />
+                </zone-style>
+              </zone>
+            </zone>
+          </zone>
+          <zone-style>
+            <format attr='border-color' value='#000000' />
+            <format attr='border-style' value='none' />
+            <format attr='border-width' value='0' />
+            <format attr='margin' value='8' />
+          </zone-style>
+        </zone>
+      </zones>
+      <simple-id uuid='{6B19BB59-A10E-479D-9D60-805335B11749}' />
+    </dashboard>
+    <dashboard _.fcp.AccessibleZoneTabOrder.true...enable-sort-zone-taborder='true' name='Locality'>
+      <repository-location derived-from='https://public.tableau.com/workbooks/Sourcebook-Homeowershipgap/Locality?rev=' id='Locality' path='/workbooks/Sourcebook-Homeowershipgap' revision='' />
+      <style />
+      <size maxheight='500' maxwidth='800' sizing-mode='range' />
+      <datasources>
+        <datasource caption='b25003_wide' name='federated.1s1owxb0t1qs4l13eiuaq0hwqt3j' />
+      </datasources>
+      <datasource-dependencies datasource='federated.1s1owxb0t1qs4l13eiuaq0hwqt3j'>
+        <column caption='Name Long' datatype='string' name='[name_long]' role='dimension' type='nominal' />
+        <column-instance column='[name_long]' derivation='None' name='[none:name_long:nk]' pivot='key' type='nominal' />
+      </datasource-dependencies>
+      <zones>
+        <zone h='100000' id='4' type-v2='layout-basic' w='100000' x='0' y='0'>
+          <zone h='96800' id='43' param='horz' type-v2='layout-flow' w='98000' x='1000' y='1600'>
+            <zone h='96800' id='37' param='horz' type-v2='layout-flow' w='76625' x='1000' y='1600'>
+              <zone h='96800' id='23' type-v2='layout-basic' w='76625' x='1000' y='1600'>
+                <zone forceUpdate='true' h='6400' id='11' type-v2='text' w='76625' x='1000' y='1600'>
+                  <formatted-text>
+                    <run fontcolor='#333333' fontname='Tableau Semibold' fontsize='14'>Homeownership rate by race and ethnicity</run>
+                  </formatted-text>
+                  <zone-style>
+                    <format attr='border-color' value='#000000' />
+                    <format attr='border-style' value='none' />
+                    <format attr='border-width' value='0' />
+                    <format attr='margin' value='4' />
+                  </zone-style>
+                </zone>
+                <zone h='90400' id='41' name='locality' show-title='false' w='76625' x='1000' y='8000'>
+                  <zone-style>
+                    <format attr='border-color' value='#000000' />
+                    <format attr='border-style' value='none' />
+                    <format attr='border-width' value='0' />
+                    <format attr='margin' value='4' />
+                  </zone-style>
+                </zone>
+              </zone>
+            </zone>
+            <zone fixed-size='171' h='96800' id='42' is-fixed='true' param='vert' type-v2='layout-flow' w='21375' x='77625' y='1600'>
+              <zone h='10400' id='45' mode='dropdown' name='locality' param='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[none:name_long:nk]' show-all='false' type-v2='filter' values='database' w='21375' x='77625' y='1600'>
+                <zone-style>
+                  <format attr='border-color' value='#000000' />
+                  <format attr='border-style' value='none' />
+                  <format attr='border-width' value='0' />
+                  <format attr='margin' value='4' />
+                </zone-style>
+              </zone>
+              <zone h='67800' id='47' type-v2='empty' w='21375' x='77625' y='12000'>
+                <zone-style>
+                  <format attr='border-color' value='#000000' />
+                  <format attr='border-style' value='none' />
+                  <format attr='border-width' value='0' />
+                  <format attr='margin' value='4' />
+                </zone-style>
+              </zone>
+              <zone h='18600' id='46' type-v2='text' w='21375' x='77625' y='79800'>
+                <formatted-text>
+                  <run bold='true'>Source: </run>
+                  <run>U.S. Census Bureau, American Community Survey, 2010-2019 5-year estimates, Table B25003B-I.</run>
+                </formatted-text>
+                <zone-style>
+                  <format attr='border-color' value='#000000' />
+                  <format attr='border-style' value='none' />
+                  <format attr='border-width' value='0' />
+                  <format attr='margin' value='4' />
+                </zone-style>
+              </zone>
+            </zone>
+          </zone>
+          <zone-style>
+            <format attr='border-color' value='#000000' />
+            <format attr='border-style' value='none' />
+            <format attr='border-width' value='0' />
+            <format attr='margin' value='8' />
+          </zone-style>
+        </zone>
+      </zones>
+      <simple-id uuid='{E2DB2D6C-142B-43F9-AD7E-89548DD2A8ED}' />
+    </dashboard>
+    <dashboard _.fcp.AccessibleZoneTabOrder.true...enable-sort-zone-taborder='true' name='Statewide'>
+      <repository-location derived-from='https://public.tableau.com/workbooks/Sourcebook-Homeowershipgap/Statewide?rev=' id='Statewide' path='/workbooks/Sourcebook-Homeowershipgap' revision='' />
+      <style />
+      <size maxheight='500' maxwidth='800' sizing-mode='range' />
+      <zones>
+        <zone h='100000' id='4' type-v2='layout-basic' w='100000' x='0' y='0'>
+          <zone h='83397' id='7' param='horz' type-v2='layout-flow' w='98000' x='1000' y='8602'>
+            <zone h='83397' id='5' type-v2='layout-basic' w='98000' x='1000' y='8602'>
+              <zone h='83397' id='3' name='statewide' show-title='false' w='98000' x='1000' y='8602'>
+                <zone-style>
+                  <format attr='border-color' value='#000000' />
+                  <format attr='border-style' value='none' />
+                  <format attr='border-width' value='0' />
+                  <format attr='margin' value='4' />
+                </zone-style>
+              </zone>
+            </zone>
+          </zone>
+          <zone forceUpdate='true' h='7002' id='11' type-v2='text' w='98000' x='1000' y='1600'>
+            <formatted-text>
+              <run fontcolor='#333333' fontname='Tableau Semibold' fontsize='14'>Homeownership rate by race and ethnicity</run>
+            </formatted-text>
+            <zone-style>
+              <format attr='border-color' value='#000000' />
+              <format attr='border-style' value='none' />
+              <format attr='border-width' value='0' />
+              <format attr='margin' value='4' />
+            </zone-style>
+          </zone>
+          <zone forceUpdate='true' h='6401' id='12' type-v2='text' w='98000' x='1000' y='91999'>
+            <formatted-text>
+              <run bold='true'>Source: </run>
+              <run>U.S. Census Bureau, American Community Survey, 2010-2019 5-year estimates, Table B25003B-I.</run>
+            </formatted-text>
+            <zone-style>
+              <format attr='border-color' value='#000000' />
+              <format attr='border-style' value='none' />
+              <format attr='border-width' value='0' />
+              <format attr='margin' value='4' />
+            </zone-style>
+          </zone>
+          <zone-style>
+            <format attr='border-color' value='#000000' />
+            <format attr='border-style' value='none' />
+            <format attr='border-width' value='0' />
+            <format attr='margin' value='8' />
+          </zone-style>
+        </zone>
+      </zones>
+      <simple-id uuid='{6E54EC54-9EA2-4086-866B-0A5879B5950B}' />
+    </dashboard>
+    <dashboard _.fcp.AccessibleZoneTabOrder.true...enable-sort-zone-taborder='true' name='ho_map_db'>
+      <repository-location id='ho_map_db' path='/workbooks/Sourcebook-Homeowershipgap' revision='' />
+      <style />
+      <size maxheight='500' maxwidth='800' minheight='500' minwidth='800' sizing-mode='fixed' />
+      <datasources>
+        <datasource caption='b25003_wide' name='federated.1s1owxb0t1qs4l13eiuaq0hwqt3j' />
+      </datasources>
+      <datasource-dependencies datasource='federated.1s1owxb0t1qs4l13eiuaq0hwqt3j'>
+        <column caption='Year' datatype='date' default-format='*YYYY' name='[year]' role='dimension' type='quantitative' />
+        <column-instance column='[year]' derivation='Year' name='[yr:year:ok]' pivot='key' type='ordinal' />
+      </datasource-dependencies>
+      <zones>
+        <zone h='100000' id='4' type-v2='layout-basic' w='100000' x='0' y='0'>
+          <zone h='96800' id='12' is-fixed='true' type-v2='layout-basic' w='98000' x='1000' y='1600'>
+            <zone h='96800' id='7' param='horz' type-v2='layout-flow' w='73999' x='1000' y='1600'>
+              <zone h='96800' id='5' type-v2='layout-basic' w='73999' x='1000' y='1600'>
+                <zone h='96800' id='3' name='ho_map' w='73999' x='1000' y='1600'>
+                  <zone-style>
+                    <format attr='border-color' value='#000000' />
+                    <format attr='border-style' value='none' />
+                    <format attr='border-width' value='0' />
+                    <format attr='margin' value='4' />
+                  </zone-style>
+                </zone>
+              </zone>
+            </zone>
+            <zone h='96800' id='13' param='horz' type-v2='layout-flow' w='24001' x='74999' y='1600'>
+              <zone fixed-size='192' h='96800' id='6' is-fixed='true' param='vert' type-v2='layout-flow' w='24001' x='74999' y='1600'>
+                <zone h='15000' id='8' mode='slider' name='ho_map' param='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[yr:year:ok]' show-all='false' type-v2='filter' w='24001' x='74999' y='1600'>
+                  <zone-style>
+                    <format attr='border-color' value='#000000' />
+                    <format attr='border-style' value='none' />
+                    <format attr='border-width' value='0' />
+                    <format attr='margin' value='4' />
+                  </zone-style>
+                </zone>
+                <zone fixed-size='59' h='13400' id='9' is-fixed='true' name='ho_map' pane-specification-id='0' param='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]' type-v2='color' w='24001' x='74999' y='16600'>
+                  <zone-style>
+                    <format attr='border-color' value='#000000' />
+                    <format attr='border-style' value='none' />
+                    <format attr='border-width' value='0' />
+                    <format attr='margin' value='4' />
+                  </zone-style>
+                </zone>
+                <zone h='53200' id='15' type-v2='empty' w='24001' x='74999' y='30000'>
+                  <zone-style>
+                    <format attr='border-color' value='#000000' />
+                    <format attr='border-style' value='none' />
+                    <format attr='border-width' value='0' />
+                    <format attr='margin' value='4' />
+                  </zone-style>
+                </zone>
+                <zone forceUpdate='true' h='15200' id='14' type-v2='text' w='24001' x='74999' y='83200'>
+                  <formatted-text>
+                    <run bold='true'>Source: </run>
+                    <run>U.S. Census Bureau, American Community Survey, 2010-2019 5-year estimates, Table B25003.</run>
+                  </formatted-text>
+                  <zone-style>
+                    <format attr='border-color' value='#000000' />
+                    <format attr='border-style' value='none' />
+                    <format attr='border-width' value='0' />
+                    <format attr='margin' value='4' />
+                  </zone-style>
+                </zone>
+              </zone>
+            </zone>
+          </zone>
+          <zone-style>
+            <format attr='border-color' value='#000000' />
+            <format attr='border-style' value='none' />
+            <format attr='border-width' value='0' />
+            <format attr='margin' value='8' />
+          </zone-style>
+        </zone>
+      </zones>
+      <simple-id uuid='{68F86424-5E42-4D8D-B3E5-0DDAB610F229}' />
+    </dashboard>
+  </dashboards>
+  <windows source-height='30'>
+    <window class='worksheet' name='ho_time'>
+      <cards>
+        <edge name='left'>
+          <strip size='160'>
+            <card type='pages' />
+            <card type='filters' />
+            <card type='marks' />
+          </strip>
+        </edge>
+        <edge name='top'>
+          <strip size='2147483647'>
+            <card type='columns' />
+          </strip>
+          <strip size='2147483647'>
+            <card type='rows' />
+          </strip>
+        </edge>
+        <edge name='right'>
+          <strip size='160'>
+            <card pane-specification-id='3' param='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]' type='color' />
+          </strip>
+        </edge>
+      </cards>
+      <viewpoint>
+        <highlight>
+          <color-one-way>
+            <field>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Race (group)]</field>
+            <field>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[none:locality:nk]</field>
+            <field>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[none:race:nk]</field>
+            <field>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[tyr:year:qk]</field>
+          </color-one-way>
+        </highlight>
+      </viewpoint>
+      <simple-id uuid='{051C1418-5603-4C89-AF03-C761EE558A2B}' />
+    </window>
+    <window class='dashboard' maximized='true' name='Statewide'>
+      <viewpoints>
+        <viewpoint name='statewide'>
+          <zoom type='entire-view' />
+          <highlight field='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Race (group)]'>
+            <bucket-selection />
+          </highlight>
+        </viewpoint>
+      </viewpoints>
+      <active id='-1' />
+      <grid grid-overlay-mode='on' />
+      <simple-id uuid='{FB70C429-5476-494A-A5CD-43E979F7883D}' />
+    </window>
+    <window class='dashboard' name='CBSA'>
+      <viewpoints>
+        <viewpoint name='cbsa'>
+          <zoom type='entire-view' />
+        </viewpoint>
+      </viewpoints>
+      <active id='-1' />
+      <grid grid-overlay-mode='on' />
+      <simple-id uuid='{5AE37BC0-4DE8-4099-B237-EADF50672D64}' />
+    </window>
+    <window class='dashboard' name='Locality'>
+      <viewpoints>
+        <viewpoint name='locality'>
+          <zoom type='entire-view' />
+          <highlight field='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Race (group)]'>
+            <bucket-selection />
+          </highlight>
+        </viewpoint>
+      </viewpoints>
+      <active id='-1' />
+      <grid grid-overlay-mode='on' />
+      <simple-id uuid='{A1D8FCDA-2DF3-4591-B050-45A7D3233E86}' />
+    </window>
+    <window class='dashboard' name='ho_map_db'>
+      <viewpoints>
+        <viewpoint name='ho_map'>
+          <zoom type='entire-view' />
+          <default-map-tool-selection tool='4' />
+        </viewpoint>
+      </viewpoints>
+      <active id='-1' />
+      <simple-id uuid='{CDBB9E92-FFE1-48DE-911B-2FEA44D45755}' />
+    </window>
+    <window class='worksheet' hidden='true' name='cbsa'>
+      <cards>
+        <edge name='left'>
+          <strip size='160'>
+            <card type='pages' />
+            <card type='filters' />
+            <card type='marks' />
+          </strip>
+        </edge>
+        <edge name='top'>
+          <strip size='2147483647'>
+            <card type='columns' />
+          </strip>
+          <strip size='2147483647'>
+            <card type='rows' />
+          </strip>
+        </edge>
+        <edge name='right'>
+          <strip size='160'>
+            <card pane-specification-id='0' param='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Race (group)]' type='color' />
+          </strip>
+        </edge>
+      </cards>
+      <viewpoint>
+        <highlight>
+          <color-one-way>
+            <field>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Locality (group)]</field>
+            <field>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Race (group)]</field>
+            <field>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[none:cbsa_title:nk]</field>
+            <field>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[none:locality:nk]</field>
+            <field>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[none:race:nk]</field>
+            <field>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[tyr:year:qk]</field>
+            <field>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[yr:year:ok]</field>
+          </color-one-way>
+        </highlight>
+      </viewpoint>
+      <simple-id uuid='{D020010C-6D53-48AA-BDB2-07642EED76CF}' />
+    </window>
+    <window class='worksheet' hidden='true' name='ho_map'>
+      <cards>
+        <edge name='left'>
+          <strip size='160'>
+            <card type='pages' />
+            <card type='filters' />
+            <card type='marks' />
+          </strip>
+        </edge>
+        <edge name='top'>
+          <strip size='2147483647'>
+            <card type='columns' />
+          </strip>
+          <strip size='2147483647'>
+            <card type='rows' />
+          </strip>
+          <strip size='31'>
+            <card type='title' />
+          </strip>
+        </edge>
+        <edge name='right'>
+          <strip size='160'>
+            <card mode='slider' param='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[yr:year:ok]' show-all='false' type='filter' />
+            <card pane-specification-id='0' param='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[usr:Calculation_1004302779991048192:qk]' type='color' />
+          </strip>
+        </edge>
+      </cards>
+      <viewpoint>
+        <highlight>
+          <color-one-way>
+            <field>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Locality (group)]</field>
+            <field>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[none:locality:nk]</field>
+            <field>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[none:race:nk]</field>
+            <field>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[tyr:year:qk]</field>
+            <field>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[yr:year:ok]</field>
+          </color-one-way>
+        </highlight>
+      </viewpoint>
+      <simple-id uuid='{CE083449-1C23-4C4A-A279-CF61D677B093}' />
+    </window>
+    <window class='worksheet' hidden='true' name='locality'>
+      <cards>
+        <edge name='left'>
+          <strip size='160'>
+            <card type='pages' />
+            <card type='filters' />
+            <card type='marks' />
+          </strip>
+        </edge>
+        <edge name='top'>
+          <strip size='2147483647'>
+            <card type='columns' />
+          </strip>
+          <strip size='2147483647'>
+            <card type='rows' />
+          </strip>
+        </edge>
+        <edge name='right'>
+          <strip size='160'>
+            <card mode='dropdown' param='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[none:name_long:nk]' show-all='false' type='filter' />
+            <card pane-specification-id='0' param='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Race (group)]' type='color' />
+          </strip>
+        </edge>
+      </cards>
+      <viewpoint>
+        <highlight>
+          <color-one-way>
+            <field>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Locality (group)]</field>
+            <field>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Race (group)]</field>
+            <field>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[none:locality:nk]</field>
+            <field>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[none:name_long:nk]</field>
+            <field>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[none:race:nk]</field>
+            <field>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[tyr:year:qk]</field>
+          </color-one-way>
+        </highlight>
+      </viewpoint>
+      <simple-id uuid='{A500DE10-5EC7-41C0-AEDB-3C3B0BF6D6DE}' />
+    </window>
+    <window class='worksheet' hidden='true' name='statewide'>
+      <cards>
+        <edge name='left'>
+          <strip size='160'>
+            <card type='pages' />
+            <card type='filters' />
+            <card type='marks' />
+          </strip>
+        </edge>
+        <edge name='top'>
+          <strip size='2147483647'>
+            <card type='columns' />
+          </strip>
+          <strip size='2147483647'>
+            <card type='rows' />
+          </strip>
+        </edge>
+        <edge name='right'>
+          <strip size='160'>
+            <card pane-specification-id='0' param='[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Race (group)]' type='color' />
+          </strip>
+        </edge>
+      </cards>
+      <viewpoint>
+        <highlight>
+          <color-one-way>
+            <field>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Locality (group)]</field>
+            <field>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[Race (group)]</field>
+            <field>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[none:locality:nk]</field>
+            <field>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[none:race:nk]</field>
+            <field>[federated.1s1owxb0t1qs4l13eiuaq0hwqt3j].[tyr:year:qk]</field>
+          </color-one-way>
+        </highlight>
+      </viewpoint>
+      <simple-id uuid='{35761117-EDDC-4F0A-9CD8-2EAF3A1A7F00}' />
+    </window>
+  </windows>
+  <thumbnails>
+    <thumbnail height='192' name='Statewide' width='192'>
+      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
+      7Gj+H2ofYie/UJDVAAAAAElFTkSuQmCC
+    </thumbnail>
+  </thumbnails>
+</workbook>
