@@ -1,0 +1,84 @@
+---
+title: "Sourcebook > Demographics > Population"
+subtitle: "Data sources and methods"
+author: "HousingForward Virginia"
+date: "Updated on `r Sys.Date()`"
+output:
+  html_document:
+    theme: lumen
+    toc: true
+    toc_float: true
+    number_sections: true
+---
+
+# Data sources
+
+### American Community Survey (ACS) {.unnumbered}
+
+The U.S. Census Bureau's American Community Survey provides estimates on demographic characteristics based on a sampling of residents every month, every year.
+
+* Table B17001 - Poverty Status in the Past 12 Months By Sex and Age
++ Append letters B-I for race and ethnicity
+
+# Setup
+```{r setup}
+# Load necessary libraries to pull data.
+library(tidyverse)
+library(tidycensus)
+
+knitr::opts_chunk$set(echo=TRUE, message=FALSE, warning=FALSE)
+
+
+# Create an object for years needed.
+
+years <- 2010:2019
+
+# Create an object for all tables needed.
+
+b17001 <- paste0("B17001", LETTERS[2:9]) # Need to append letters B-I
+
+# Create a function to createa a race and ethnicity category.
+
+concept_to_race <- function(x) {
+  out <- x %>%
+    str_remove_all("POVERTY STATUS IN THE PAST 12 MONTHS BY SEX BY AGE \\(|\\)") %>%
+    str_to_title()
+}
+
+# Get variables for Table B17001.
+
+b17001_defns <- load_variables(2019, "acs5") %>%
+  filter(str_sub(name, end = 7) %in% b17001) %>%
+  filter(str_detect(name, "PR") == FALSE)
+
+b17001_cleaned <- b17001_defns %>%
+  mutate(race = concept_to_race(concept)) %>%
+  separate(label, c ("estimate", "total", "poverty", "sex", "age"), sep = "!!") %>%
+  select(variable = name, race, poverty, sex, age) %>%
+  mutate(across(.fns = ~replace_na(.x, "All")),
+         across(.fns = ~str_remove_all(.x, ":")))
+```
+
+# Data collection
+```{r data-collection}
+output_b17001 <- map_dfr(b17001, function(tb){
+  yearly_data <- map_dfr(years, function(yr){
+    
+    acs_pull <- get_acs(
+      geography = "county",
+      table = tb,
+      year = yr,
+      state = "VA"
+    ) %>%
+      left_join(b17001_cleaned, by = "variable")
+    
+    acs_rearranged <- acs_pull %>%
+      mutate(year = yr) %>%
+      select(variable, year, locality = NAME, fips = GEOID, race, poverty, age,
+             estimate, moe)
+    
+    acs_rearranged
+  })
+  yearly_data
+})
+```
