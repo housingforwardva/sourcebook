@@ -276,7 +276,9 @@ knitr::opts_chunk$set(echo=TRUE, message=FALSE, warning=FALSE, eval = FALSE)</co
 <div id="data-collection" class="section level1" number="3">
 <h1><span class="header-section-number">3</span> Data collection</h1>
 <pre class="r"><code># Create an object for years.
-years &lt;- 2010:2019
+years_full &lt;- 2010:2019
+years_partial_1 &lt;- 2010:2014
+years_partial_2 &lt;- 2015:2019
 
 # Create object for tables.
 b25063 &lt;- &quot;B25063&quot;
@@ -284,7 +286,11 @@ b25064 &lt;- &quot;B25064&quot;
 
 # Get variables from tables.
 
-b25063_defns &lt;- load_variables(2019, &quot;acs5&quot;) %&gt;%
+b25063_defns_2019 &lt;- load_variables(2019, &quot;acs5&quot;) %&gt;%
+  filter(str_sub(name, end = 6) == b25063) %&gt;%
+  filter(str_detect(name, &quot;PR&quot;) == FALSE)
+
+b25063_defns_2014 &lt;- load_variables(2014, &quot;acs5&quot;) %&gt;%
   filter(str_sub(name, end = 6) == b25063) %&gt;%
   filter(str_detect(name, &quot;PR&quot;) == FALSE)
 
@@ -294,7 +300,13 @@ b25064_defns &lt;- load_variables(2019, &quot;acs5&quot;) %&gt;%
 
 # Clean variables and select only needed columns.
 
-b25063_cleaned &lt;- b25063_defns %&gt;%
+b25063_cleaned_2014 &lt;- b25063_defns_2014 %&gt;%
+  separate(label, into = c(&quot;est&quot;, &quot;total&quot;, &quot;cash&quot;, &quot;rent&quot;), sep = &quot;!!&quot;) %&gt;%
+  select(variable = name, cash, rent) %&gt;%
+  mutate(across(.fns = ~replace_na(.x, &quot;All&quot;)),
+         across(.fns = ~str_remove_all(.x, &quot;:&quot;)))
+
+b25063_cleaned_2019 &lt;- b25063_defns_2019 %&gt;%
   separate(label, into = c(&quot;est&quot;, &quot;total&quot;, &quot;cash&quot;, &quot;rent&quot;), sep = &quot;!!&quot;) %&gt;%
   select(variable = name, cash, rent) %&gt;%
   mutate(across(.fns = ~replace_na(.x, &quot;All&quot;)),
@@ -313,14 +325,31 @@ b25064_cleaned &lt;- b25064_defns %&gt;%
 # value when needing CBSA and &quot;state&quot; when needing state value (when using state
 # remove the state = &quot;VA&quot; line)
 
-output_b25063 &lt;- map_dfr(years, function(yr){
+output_b25063_2014 &lt;- map_dfr(years_partial_1, function(yr){
   acs_pull &lt;- get_acs(
     geography = &quot;county&quot;,
     table = b25063,
     year = yr,
     state = &quot;VA&quot;
   ) %&gt;%
-    left_join(b25063_cleaned, by = &quot;variable&quot;)
+    left_join(b25063_cleaned_2014, by = &quot;variable&quot;)
+  
+  acs_rearranged &lt;- acs_pull %&gt;%
+    mutate(year = yr) %&gt;%
+    select(variable, year, locality = NAME, fips = GEOID, cash, rent, 
+           estimate, moe)
+  
+  acs_rearranged
+})
+
+output_b25063_2019 &lt;- map_dfr(years_partial_2, function(yr){
+  acs_pull &lt;- get_acs(
+    geography = &quot;county&quot;,
+    table = b25063,
+    year = yr,
+    state = &quot;VA&quot;
+  ) %&gt;%
+    left_join(b25063_cleaned_2019, by = &quot;variable&quot;)
   
   acs_rearranged &lt;- acs_pull %&gt;%
     mutate(year = yr) %&gt;%
@@ -378,7 +407,9 @@ output_b25064_state &lt;- map_dfr(years, function(yr){
            estimate, moe)
   
   acs_rearranged
-})</code></pre>
+})
+
+output_b25063 &lt;- rbind(output_b25063_2014, output_b25063_2019)</code></pre>
 </div>
 <div id="data-prep" class="section level1" number="4">
 <h1><span class="header-section-number">4</span> Data prep</h1>

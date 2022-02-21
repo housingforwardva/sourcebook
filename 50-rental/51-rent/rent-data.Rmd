@@ -49,7 +49,9 @@ knitr::opts_chunk$set(echo=TRUE, message=FALSE, warning=FALSE, eval = FALSE)
 # Data collection
 ```{r data-collect}
 # Create an object for years.
-years <- 2010:2019
+years_full <- 2010:2019
+years_partial_1 <- 2010:2014
+years_partial_2 <- 2015:2019
 
 # Create object for tables.
 b25063 <- "B25063"
@@ -57,7 +59,11 @@ b25064 <- "B25064"
 
 # Get variables from tables.
 
-b25063_defns <- load_variables(2019, "acs5") %>%
+b25063_defns_2019 <- load_variables(2019, "acs5") %>%
+  filter(str_sub(name, end = 6) == b25063) %>%
+  filter(str_detect(name, "PR") == FALSE)
+
+b25063_defns_2014 <- load_variables(2014, "acs5") %>%
   filter(str_sub(name, end = 6) == b25063) %>%
   filter(str_detect(name, "PR") == FALSE)
 
@@ -67,7 +73,13 @@ b25064_defns <- load_variables(2019, "acs5") %>%
 
 # Clean variables and select only needed columns.
 
-b25063_cleaned <- b25063_defns %>%
+b25063_cleaned_2014 <- b25063_defns_2014 %>%
+  separate(label, into = c("est", "total", "cash", "rent"), sep = "!!") %>%
+  select(variable = name, cash, rent) %>%
+  mutate(across(.fns = ~replace_na(.x, "All")),
+         across(.fns = ~str_remove_all(.x, ":")))
+
+b25063_cleaned_2019 <- b25063_defns_2019 %>%
   separate(label, into = c("est", "total", "cash", "rent"), sep = "!!") %>%
   select(variable = name, cash, rent) %>%
   mutate(across(.fns = ~replace_na(.x, "All")),
@@ -86,14 +98,31 @@ b25064_cleaned <- b25064_defns %>%
 # value when needing CBSA and "state" when needing state value (when using state
 # remove the state = "VA" line)
 
-output_b25063 <- map_dfr(years, function(yr){
+output_b25063_2014 <- map_dfr(years_partial_1, function(yr){
   acs_pull <- get_acs(
     geography = "county",
     table = b25063,
     year = yr,
     state = "VA"
   ) %>%
-    left_join(b25063_cleaned, by = "variable")
+    left_join(b25063_cleaned_2014, by = "variable")
+  
+  acs_rearranged <- acs_pull %>%
+    mutate(year = yr) %>%
+    select(variable, year, locality = NAME, fips = GEOID, cash, rent, 
+           estimate, moe)
+  
+  acs_rearranged
+})
+
+output_b25063_2019 <- map_dfr(years_partial_2, function(yr){
+  acs_pull <- get_acs(
+    geography = "county",
+    table = b25063,
+    year = yr,
+    state = "VA"
+  ) %>%
+    left_join(b25063_cleaned_2019, by = "variable")
   
   acs_rearranged <- acs_pull %>%
     mutate(year = yr) %>%
@@ -152,6 +181,8 @@ output_b25064_state <- map_dfr(years, function(yr){
   
   acs_rearranged
 })
+
+output_b25063 <- rbind(output_b25063_2014, output_b25063_2019)
 ```
 
 # Data prep
