@@ -1,15 +1,19 @@
 ---
-title: "rent-data"
-author: "Eric Mai"
-date: "2/1/2022"
-output: html_document
+title: "Sourcebook > Rental > Rent"
+subtitle: "Data sources and methods"
+author: "HousingForward Virginia"
+date: "Updated on `r Sys.Date()`"
+output:
+  html_document:
+    theme: lumen
+    toc: true
+    toc_float: true
+    number_sections: true
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, eval = FALSE )
-```
+# Data Sources
 
-## Data Sources
+### American Community Survey (ACS) {-}
 The main data source for rents for renter-occupied housing units is the American
 Community Survey. Table B25063 provides a distribution of rental prices for a
 locality, while Table B25064 provides the median gross rent. 
@@ -22,19 +26,28 @@ year) and must be adjusted to a consistent dollar value. This is done by utilizi
 the **Consumer Price Index (CPI)**. CPI is a measure of the average change over 
 time in the prices paid by households for consumer goods. 
 
+### FRED Economic Data | St. Louis Fed {-}
+
 While the Census Bureau utilizes CPI-U, CPI for all Urban Consumers, a more accurate 
-CPI is the *Consumer Price Index for All Urban Consumers: Rent of Primary Residence in South*. 
-This data can be sourced from [FRED Economic Data](https://fred.stlouisfed.org/series/CUUR0300SEHA).
+CPI to adjust housing costs is the *Consumer Price Index for All Urban Consumers: All Items Less Shelter in U.S. City Average*. This data can be sourced from [FRED Economic Data](https://fred.stlouisfed.org/series/CUUR0000SA0L2).
 
 Adjustments should be made using an average annual CPI.
 
-## Data Collection
-```{r Download, echo=T, message=FALSE, warning=FALSE, paged.print=FALSE, results='hide'}
+# Setup
+```{r setup, message=FALSE, warning=FALSE}
 
 # Load the necessary packages to pull data from the Census API.
 library(tidycensus)
 library(tidyverse)
+# The lubridate package allows us to easily work with date fields that exist in the
+# CPI data file.
+library(lubridate)
 
+knitr::opts_chunk$set(echo=TRUE, message=FALSE, warning=FALSE, eval = FALSE)
+```
+
+# Data collection
+```{r data-collect}
 # Create an object for years.
 years <- 2010:2019
 
@@ -139,13 +152,10 @@ output_b25064_state <- map_dfr(years, function(yr){
   
   acs_rearranged
 })
-
-# Write Table B25063 to csv.
-write_csv(output_b25063, "data/b25063_2010_2019.csv")
-
 ```
 
-## Data Prep
+# Data prep
+
 Table B25064 presents median dollar values which is not accurately comparable in
 its given form. To compare median dollar values across time, dollar values must
 be adjusted to a consistent dollar value.
@@ -161,21 +171,19 @@ $CPI_1$ is the average annual CPI for 2019 and
 $CPI_2$ is the average annual CPI for the given year.
 
 
-```{r Prep B25064, echo=T, message=FALSE, warning=FALSE, paged.print=FALSE, results='hide'}
-# The lubridate package allows us to easily work with date fields that exist in the
-# CPI data file.
-library(lubridate)
+```{r data-prep}
+
 
 # Load the raw csv data file of CPI values by month for rent of primary residence in
 # the South.
-cpi <- read_csv("raw\\CUUR0300SEHA.csv")
+cpi <- read_csv("raw\\CUUR0000SA0L2.csv")
 
 # Create a column based on the year of CPI value.
 cpi$year <- floor_date(cpi$DATE, "year")
 
 # Rename columns and ensure that CPI value is a numeric value.
 cpi <- cpi %>%
-  rename(cpi_value = CUUR0300SEHA) %>%
+  rename(cpi_value = CUUR0000SA0L2) %>%
   transform(cpi_value = as.numeric(cpi_value))
 
 # Summarize CPI by year to get average annual CPI. 
@@ -187,28 +195,38 @@ annual_cpi <- cpi %>%
 # Join B25064 tables to the Annual CPI table based on year and then create a 
 # column for 2019 dollar value (dollars19) that utilizes the formula above.
 
-# The average annual CPI for 2019 is 295.1968.
+# The average annual CPI for 2019 is 234.21450.
 
 b25064_locality <- output_b25064_locality %>%
   left_join(annual_cpi, by = 'year') %>%
   rename(cpi = mean) %>%
-  mutate(dollars19 = ((295.1968/cpi)*estimate))
+  mutate(dollars19 = ((234.21450/cpi)*estimate))
 
 b25064_cbsa <- output_b25064_cbsa %>%
   left_join(annual_cpi, by = 'year') %>%
   rename(cpi = mean) %>%
-  mutate(dollars19 = ((295.1968/cpi)*estimate))
+  mutate(dollars19 = ((234.21450/cpi)*estimate))
 
 b25064_state <- output_b25064_state %>%
   left_join(annual_cpi, by = 'year') %>%
   rename(cpi = mean) %>%
-  mutate(dollars19 = ((295.1968/cpi)*estimate))
+  mutate(dollars19 = ((234.21450/cpi)*estimate))
+```
 
+
+# Data export
+
+```{r data-export}
 # Write to csv files.
 
 write_csv(b25064_locality, "data/b25064_locality.csv")
 write_csv(b25064_cbsa, "data/b25064_cbsa.csv")
 write_csv(b25064_state, "data/b25064_state.csv")
+write_csv(output_b25063, "data/b25063_2010_2019.csv")
 
 ```
+
+# Dashboard development
+
+Reserved for future Shiny app development.
 
