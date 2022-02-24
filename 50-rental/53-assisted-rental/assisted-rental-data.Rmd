@@ -1,0 +1,57 @@
+---
+title: "Sourcebook > Rental > Assisted rental"
+subtitle: "Data sources and methods"
+author: "HousingForward Virginia"
+date: "Updated on `r Sys.Date()`"
+output:
+  html_document:
+    theme: lumen
+    toc: true
+    toc_float: true
+    number_sections: true
+---
+
+# Data sources
+
+### National Housing Preservation Database (NHPD) {-}
+
+The National Housing Preservation Database (NHPD) is a collaboration between the
+Public and Affordable Housing Research Corporation (PAHRC) and the National Low 
+Income Housing Coalition (NLIHC). The database was created in 2011 and provides an
+address-level inventory of federally assisted rental housing across the nation.
+
+Data is sourced directly from the U.S. Department of Housing and Urban Development 
+(HUD) and the U.S. Department of Agriculture (USDA).
+
+Data is updated on a tri-annual basis.
+
+# Setup
+```{r setup, message=FALSE, warning=FALSE}
+# Load packages and set global chunk options
+
+library(tibble)
+library(tidygeocoder)
+library(tidyverse)
+library(readxl)
+
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE,
+	eval = FALSE
+)
+```
+
+# Data collection
+```{r data-collect}
+
+va_subsidies <- read_xlsx("raw/nhpd_subsidies_va_2.23.22.xlsx")
+
+lat_long <- va_subsidies %>%
+  geocode(street = `Street Address`, city = `City`, state = `State`, method = 'census',
+          full_results = TRUE,
+          lat = Latitude, 
+          long = Longitude)
+
+
+```
