@@ -1,0 +1,124 @@
+---
+title: "Sourcebook > Inventory > Housing characteristics"
+subtitle: "Data sources and methods"
+author: "HousingForward Virginia"
+date: "Updated on `r Sys.Date()`"
+output:
+  html_document:
+    theme: lumen
+    toc: true
+    toc_float: true
+    number_sections: true
+---
+
+# Data sources
+
+### American Community Survey (ACS) {-}
+
+The American Community Survey is an ongoing survey program of the U.S. Census Bureau. The ACS collects information about the nation’s social, economic, housing, and demographic characteristics on an annual basis. This information provides the most-up-to-date estimates between decennial censuses.
+
+This section uses data from one ACS table:
+
+* **Table B25042**: Tenure by Bedrooms
+
+The most recent data used for this section are the **2015-2019 5-year estimates**. These estimates average all survey responses across this period to increase sample sizes and reduce margins of error.
+
+Link: https://www.census.gov/programs-surveys/acs
+
+# Setup
+
+```{r setup, message=FALSE, warning=FALSE}
+
+# Load packages and set global chunk options
+
+library(tidycensus)
+library(tidyverse)
+
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+
+```
+
+# Data collection
+
+```{r collect}
+
+# Get variables for Table B25042
+
+b25042_vars <- load_variables(2019, "acs5") %>% 
+  filter(str_detect(name, "B25042")) %>% 
+  filter(str_length(name) == 10)
+
+# Get B25042 data for every locality in Virginia
+
+b25042_raw <- get_acs(
+  geography = "county",
+  state = "VA",
+  table = "B25042",
+  year = 2019
+)
+
+```
+
+# Data prep
+
+```{r prep}
+
+# Clean B25042 variable names
+
+b25042_vars_clean <-  b25042_vars %>% 
+  separate(label, into = c("est", "tot", "tenure", "bedrooms"),
+           sep = "!!") %>% 
+  select(variable = name, tenure, bedrooms) %>%
+  filter(across(c(tenure, bedrooms), ~!is.na(.x))) %>% 
+  mutate(across(.fns = ~str_remove_all(.x, ":")),
+         tenure = str_remove_all(tenure, " occupied"))
+
+# Join B25042 variables to data and calculate new sums
+
+b25042_prep <- b25042_raw %>% 
+  right_join(b25042_vars_clean, by = "variable") %>% 
+  select(GEOID, tenure, bedrooms, estimate, moe) %>% 
+  group_by(GEOID, tenure, bedrooms) %>% 
+  summarise(
+    estimate = sum(estimate),
+    moe = moe_sum(moe, estimate)
+  ) %>% 
+  ungroup()
+
+# Adorn subtotals for both owner and renter units and add data reliability info
+
+b25042_data <- b25042_prep %>% 
+  bind_rows(b25042_prep %>%  
+    group_by(GEOID, bedrooms) %>% 
+    summarise(
+      estimate = sum(estimate),
+      moe = moe_sum(moe, estimate)) %>% 
+    ungroup()
+  ) %>% 
+  mutate(tenure = replace_na(tenure, "All")) %>% 
+  mutate(cv = ((moe/1.645)/estimate)*100) %>% # Calculate coefficient of variation
+  mutate(reliability = case_when(
+    cv < 15 ~ "High",
+    cv >= 15 & cv <= 30 ~ "Medium",
+    cv > 30 ~ "Low")
+  )
+
+```
+
+# Data export
+
+```{r export}
+
+# Save housing characteristics data from B25042
+
+write_csv(b25042_data, "data/housing-characteristics.csv")
+
+```
+
+# Dashboard development
+
+Reserved for future Shiny app development.
