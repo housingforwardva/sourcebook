@@ -27,11 +27,14 @@ library(tidyverse)
 library(tidycensus)
 
 knitr::opts_chunk$set(echo=TRUE, message=FALSE, warning=FALSE)
+```
 
+# Data collection
+```{r data_collection}
 
 # Create an object for years needed.
 
-years <- 2010:2019
+years <- 2010:2020
 
 # Create an object for all tables needed.
 
@@ -57,10 +60,7 @@ b17001_cleaned <- b17001_defns %>%
   select(variable = name, race, poverty, sex, age) %>%
   mutate(across(.fns = ~replace_na(.x, "All")),
          across(.fns = ~str_remove_all(.x, ":")))
-```
 
-# Data collection
-```{r data-collection}
 output_b17001 <- map_dfr(b17001, function(tb){
   yearly_data <- map_dfr(years, function(yr){
     
