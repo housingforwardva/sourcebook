@@ -21,7 +21,7 @@ This section uses data from two ACS tables:
 * **Table B25003**: Tenure
 * **Table B25004**: Vacancy Status
 
-The most recent data used for this section are the **2015-2019 5-year estimates**. These estimates average all survey responses across this period to increase sample sizes and reduce margins of error.
+The most recent data used for this section are the **2016-2020 5-year estimates**. These estimates average all survey responses across this period to increase sample sizes and reduce margins of error.
 
 Link: https://www.census.gov/programs-surveys/acs
 
@@ -46,11 +46,11 @@ knitr::opts_chunk$set(
 
 # Create an objects for years.
 
-years <- 2010:2019
+years <- 2010:2020
 
 # Get variables for Table B25003
 
-b25003_vars <- load_variables(2019, "acs5") %>%
+b25003_vars <- load_variables(2020, "acs5") %>%
   filter(str_detect(name, "B25003"))
 
 # Get B25003 data for every locality in Virginia
@@ -73,7 +73,7 @@ b25003_raw <- map_dfr(years, function(yr){
 
 # Get variables for Table B25004
 
-b25004_vars <- load_variables(2019, "acs5") %>%
+b25004_vars <- load_variables(2020, "acs5") %>%
   filter(str_detect(name, "B25004"))
 
 # Get B25004 data for every locality in Virginia

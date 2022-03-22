@@ -49,9 +49,9 @@ knitr::opts_chunk$set(echo=TRUE, message=FALSE, warning=FALSE, eval = FALSE)
 # Data collection
 ```{r data-collect}
 # Create an object for years.
-years_full <- 2010:2019
+years_full <- 2010:2020
 years_partial_1 <- 2010:2014
-years_partial_2 <- 2015:2019
+years_partial_2 <- 2015:2020
 
 # Create object for tables.
 b25063 <- "B25063"
@@ -59,7 +59,7 @@ b25064 <- "B25064"
 
 # Get variables from tables.
 
-b25063_defns_2019 <- load_variables(2019, "acs5") %>%
+b25063_defns_2020 <- load_variables(2020, "acs5") %>%
   filter(str_sub(name, end = 6) == b25063) %>%
   filter(str_detect(name, "PR") == FALSE)
 
@@ -67,7 +67,7 @@ b25063_defns_2014 <- load_variables(2014, "acs5") %>%
   filter(str_sub(name, end = 6) == b25063) %>%
   filter(str_detect(name, "PR") == FALSE)
 
-b25064_defns <- load_variables(2019, "acs5") %>%
+b25064_defns <- load_variables(2020, "acs5") %>%
   filter(str_sub(name, end = 6) == b25064) %>%
   filter(str_detect(name, "PR") == FALSE)
 
@@ -79,7 +79,7 @@ b25063_cleaned_2014 <- b25063_defns_2014 %>%
   mutate(across(.fns = ~replace_na(.x, "All")),
          across(.fns = ~str_remove_all(.x, ":")))
 
-b25063_cleaned_2019 <- b25063_defns_2019 %>%
+b25063_cleaned_2020 <- b25063_defns_2020 %>%
   separate(label, into = c("est", "total", "cash", "rent"), sep = "!!") %>%
   select(variable = name, cash, rent) %>%
   mutate(across(.fns = ~replace_na(.x, "All")),
@@ -115,14 +115,14 @@ output_b25063_2014 <- map_dfr(years_partial_1, function(yr){
   acs_rearranged
 })
 
-output_b25063_2019 <- map_dfr(years_partial_2, function(yr){
+output_b25063_2020 <- map_dfr(years_partial_2, function(yr){
   acs_pull <- get_acs(
     geography = "county",
     table = b25063,
     year = yr,
     state = "VA"
   ) %>%
-    left_join(b25063_cleaned_2019, by = "variable")
+    left_join(b25063_cleaned_2020, by = "variable")
   
   acs_rearranged <- acs_pull %>%
     mutate(year = yr) %>%
@@ -182,7 +182,7 @@ output_b25064_state <- map_dfr(years, function(yr){
   acs_rearranged
 })
 
-output_b25063 <- rbind(output_b25063_2014, output_b25063_2019)
+output_b25063 <- rbind(output_b25063_2014, output_b25063_2020)
 ```
 
 # Data prep
@@ -191,22 +191,21 @@ Table B25064 presents median dollar values which is not accurately comparable in
 its given form. To compare median dollar values across time, dollar values must
 be adjusted to a consistent dollar value.
 
-For this purpose, dollar values for years preceding 2019 are adjusted to 2019 
-dollar values. This is done by dividing the average annual CPI for 2019 by the 
+For this purpose, dollar values for years preceding 2020 are adjusted to 2020 
+dollar values. This is done by dividing the average annual CPI for 2020 by the 
 year of the given value, then multiplying by the given value.
 
-$2019 dollars = \frac{CPI_1}{CPI_2} * yeardollars$ 
+$2020 dollars = \frac{CPI_1}{CPI_2} * yeardollars$ 
 
 where
-$CPI_1$ is the average annual CPI for 2019 and
+$CPI_1$ is the average annual CPI for 2020 and
 $CPI_2$ is the average annual CPI for the given year.
 
 
 ```{r data-prep}
 
 
-# Load the raw csv data file of CPI values by month for rent of primary residence in
-# the South.
+# Load the raw csv data file of CPI values by month for CPI for all items less shelter.
 cpi <- read_csv("raw\\CUUR0000SA0L2.csv")
 
 # Create a column based on the year of CPI value.
@@ -226,22 +225,22 @@ annual_cpi <- cpi %>%
 # Join B25064 tables to the Annual CPI table based on year and then create a 
 # column for 2019 dollar value (dollars19) that utilizes the formula above.
 
-# The average annual CPI for 2019 is 234.21450.
+# The average annual CPI for 2020 is 235.67550.
 
 b25064_locality <- output_b25064_locality %>%
   left_join(annual_cpi, by = 'year') %>%
   rename(cpi = mean) %>%
-  mutate(dollars19 = ((234.21450/cpi)*estimate))
+  mutate(dollars20 = ((235.67550/cpi)*estimate))
 
 b25064_cbsa <- output_b25064_cbsa %>%
   left_join(annual_cpi, by = 'year') %>%
   rename(cpi = mean) %>%
-  mutate(dollars19 = ((234.21450/cpi)*estimate))
+  mutate(dollars20 = ((235.67550/cpi)*estimate))
 
 b25064_state <- output_b25064_state %>%
   left_join(annual_cpi, by = 'year') %>%
   rename(cpi = mean) %>%
-  mutate(dollars19 = ((234.21450/cpi)*estimate))
+  mutate(dollars20 = ((235.67550/cpi)*estimate))
 ```
 
 
