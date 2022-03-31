@@ -57,7 +57,7 @@ years <- as.character(2007:2020)
 
 # Create an object for the file path of the Excel file.
 
-path <- "raw/2007-2020-PIT-Estimates-by-CoC.xlsx"
+path <- "raw/2007-2021-PIT-Counts-by-CoC.xlsx"
 
 # Create a function to read through each sheet and then combine them into a single
 # dataframe.
@@ -71,10 +71,25 @@ full_set <- map_dfr(years, function(yr) {
   # Remove the year suffix from the column names
   suffix_to_remove <- paste0("_", yr)
   
-  pit_renamed <- pit_set %>%
-    rename_with(~str_remove(.x, suffix_to_remove)) %>%
-    mutate(year = yr) %>%
-    select(co_c_number:co_c_name, year, everything())
+  # Handle the new category column
+  # Also note the use of `across()` to convert cols that should be numeric to numeric
+  # which will prevent errors when row-binding the data
+  if ("co_c_category" %in% names(pit_set)) {
+    pit_renamed <- pit_set %>%
+      rename_with(~str_remove(.x, suffix_to_remove)) %>%
+      mutate(year = yr) %>%
+      select(co_c_number:co_c_name, co_c_category, type_of_count, year, everything()) %>%
+      mutate(across(-c(co_c_number:year), .fns = as.numeric))
+  } else {
+    pit_renamed <- pit_set %>%
+      rename_with(~str_remove(.x, suffix_to_remove)) %>%
+      mutate(year = yr, co_c_category = NA_character_, 
+             type_of_count = NA_character_) %>%
+      select(co_c_number:co_c_name, co_c_category, type_of_count, year, everything()) %>%
+      mutate(across(-c(co_c_number:year), .fns = as.numeric))
+  }
+  
+  
   
   pit_renamed
   
@@ -106,6 +121,6 @@ va_set_longer <- va_set %>%
 ```{r data-export}
 # write the file to csv.
 
-write_csv(va_set_longer, "data/va_pit_2007_2020.csv")
+write_csv(va_set_longer, "data/va_pit_2007_2021.csv")
 ```
 
