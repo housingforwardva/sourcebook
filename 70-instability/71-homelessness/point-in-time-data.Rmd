@@ -53,7 +53,7 @@ knitr::opts_chunk$set(
 # Create an object for years in character format. This is used to account for 
 # sheets in the Excel file and then combine later.
 
-years <- as.character(2007:2020)
+years <- as.character(2007:2021)
 
 # Create an object for the file path of the Excel file.
 
@@ -95,21 +95,8 @@ full_set <- map_dfr(years, function(yr) {
   
 })
 
-# Filter the dataframe for only Virginia CoCs.
-
-va_set <- full_set %>%
-  filter(str_detect(co_c_number,'VA'))
-
-```
-
-# Data prep
-The data is pivoted from wide to long to make for easier analysis. However, the 
-current labels will require some parsing to create additional columns.
-```{r data-prep}
-# The way the dataframe is presented has too many columns for the same data values.
-# Therefore it would be best to pivot the dataframe to have a category column.
-
-va_set_longer <- va_set %>% 
+# An alternative approach, with a "category" column to reduce the large number of columns:
+full_set_longer <- full_set %>%
   pivot_longer(
     cols = overall_homeless:unsheltered_homeless_parenting_youth_under_25_multiple_races, 
     names_to = "category",
@@ -121,6 +108,6 @@ va_set_longer <- va_set %>%
 ```{r data-export}
 # write the file to csv.
 
-write_csv(va_set_longer, "data/va_pit_2007_2021.csv")
+write_csv(full_set_longer, "data/va_pit_2007_2021.csv")
 ```
 
