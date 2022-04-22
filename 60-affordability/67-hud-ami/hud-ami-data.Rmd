@@ -12,3 +12,76 @@ output:
 ---
 
 # Data sources
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE,
+                      out.width = "100%",
+                      out.extra = 'style="border:none;"')
+
+library(glue)
+library(httr)
+library(jsonlite)
+library(tidyverse)
+library(magrittr)
+```
+
+
+```{r data-collect}
+hud_token <- Sys.getenv("hud_token")
+
+va_counties <- tigris::counties(state = "VA", cb = TRUE, resolution = "20m") %>%
+  dplyr::pull(GEOID)
+
+#' We'll need to iterate over both years (2017:2021) and all of the counties for each year. 
+#' This requires two calls to `map_dfr()`, one nested within the other. 
+va_ami_data <- purrr::map_dfr(2017:2022, function(year) {
+  # Iterate over the counties for a specific year and return the result
+  purrr::map_dfr(va_counties, function(geoid) {
+    # Create the request URL by gluing together the geoid value and the URL string
+    url <- glue::glue("https://www.huduser.gov/hudapi/public/il/data/{geoid}99999")
+    
+    # Make the request - it requires a header with the api token
+    # formatted as specified below and a query for the year
+    request <- httr::GET(url, 
+                         httr::add_headers("Authorization" = glue::glue("Bearer {hud_token}")),
+                         query = list(year = year))
+    
+    # Return the content as text (which will be JSON)
+    req_content <- httr::content(request, as = "text", encoding = "UTF-8")
+    
+    # Parse the JSON...
+    county_data <- req_content %>%
+      jsonlite::fromJSON() %>%
+      purrr::flatten_dfr() %>%
+      # The family size columns come through as list-columns so they need to 
+      # be un-nested
+      tidyr::unnest(very_low:low) %>%
+      # We'll create a household size column as this information doesn't come 
+      # through by default
+      dplyr::mutate(hh_size = 1:8) %>%
+      # The next steps process and format the data to align with the example format
+      tidyr::pivot_longer(cols = median_income:low,
+                          names_to = "income_limit",
+                          values_to = "value") %>%
+      dplyr::filter(!(income_limit == "median_income" & hh_size > 1)) %>%
+      dplyr::mutate(hh_size = ifelse(income_limit == "median_income", NA, hh_size),
+                    fips = geoid,
+                    income_limit = dplyr::case_when(
+                      income_limit == "median_income" ~ "Median family income",
+                      income_limit == "low" ~ "80% AMI",
+                      income_limit == "very_low" ~ "50% AMI",
+                      income_limit == "extremely_low" ~ "30% AMI")) %>%
+      dplyr::select(-(counties_msa:metro_status))
+    
+    # Return the result
+    county_data
+  })
+}) %>%
+  # When the final output is generated, arrange in a way that makes sense
+  dplyr::arrange(fips, year, income_limit, hh_size) %>%
+  dplyr::select(year, metro_name, area_name, fips, county_name, 
+                income_limit, hh_size, value)
+
+
+write_csv(va_ami_data, "data/virginia_ami.csv")
+```
