@@ -1,0 +1,148 @@
+---
+title: "Sourcebook > Homeownership > Home sales"
+subtitle: "Data sources and methods"
+author: "HousingForward Virginia"
+date: "Updated on `r Sys.Date()`"
+output:
+  html_document:
+    theme: lumen
+    toc: true
+    toc_float: true
+    number_sections: true
+---
+
+# Data sources
+
+### Virginia REALTORS® {-}
+
+Virginia REALTORS® provides quarterly metrics on the homeownership market to HousingForward Virginia. These include median sales price, sales volume, and median days on market. Data is provided at both the MSA and locality level.
+
+Link: https://virginiarealtors.org/research/data/
+
+# Setup
+
+```{r setup, message=FALSE, warning=FALSE}
+
+# Load packages and set global chunk options
+
+library(tidyverse)
+library(readxl)
+library(glue)
+
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE,
+	results = FALSE
+)
+
+```
+
+# Data collection
+
+```{r collect}
+
+# Data provided in .xlsx files separated by locality and MSA
+# Historical quarterly data (2014 to 2021) are in separate files
+# Beginning 2022 Q1, data provided in new individual quarterly files
+
+# Set paths for locality data
+
+var_hist_locality <- "raw/var_2014-2021_locality.xlsx"
+
+var_2022Q1_locality <- "raw/var_2022-Q1_locality.xlsx"
+
+# Set paths for MSA data
+
+var_hist_msa <- "raw/var_2014-2021_msa.xlsx"
+
+var_2022Q1_msa <- "raw/var_2022-Q1_msa.xlsx"
+
+# Bring in locality data
+
+locality_raw <- var_hist_locality %>% 
+  excel_sheets() %>% 
+  set_names() %>% 
+  map_df(~ read_excel(path = var_hist_locality, 
+                      sheet = .x,
+                      skip = 4),
+         .id = "quarter")
+
+locality_2022Q1 <- read_excel(var_2022Q1_locality,
+                              sheet = "SF CT",
+                              skip = 4) %>% 
+  mutate(quarter = "2022 Q1",
+         .before = 1)
+
+# Bring in MSA data
+
+msa_raw <- var_hist_msa %>% 
+  excel_sheets() %>% 
+  set_names() %>% 
+  map_df(~ read_excel(path = var_hist_msa, 
+                      sheet = .x,
+                      skip = 4),
+         .id = "quarter")
+
+msa_2022Q1 <- read_excel(var_2022Q1_msa,
+                              sheet = "SF CT",
+                              skip = 4) %>% 
+  mutate(quarter = "2022 Q1",
+         .before = 1)
+
+```
+
+# Data prep
+
+```{r prep}
+
+# Bind historical and recent data
+# Add geography type variable
+
+locality_data <- locality_raw %>%
+  bind_rows(locality_2022Q1) %>% 
+  mutate(geography = "Locality",
+         .before = 1) %>% 
+  rename(name = 'City County')
+
+msa_data <- msa_raw %>% 
+  bind_rows(msa_2022Q1) %>% 
+  mutate(geography = "MSA",
+         .before = 1) %>% 
+  rename(name = 'MSA') %>% 
+  filter(!name == "Grand Total")
+
+# Bind locality and MSA data
+# Select and rename columns
+# Change statewide 'Grand Total' entries to 'Virginia'
+
+full_data <- bind_rows(locality_data, msa_data) %>% 
+  select(geography,
+         quarter,
+         name,
+         units = 'Units',
+         med_price = 'Median Price',
+         med_dom = 'Median DOM',
+         med_asratio = 'Median A/S Ratio') %>% 
+  mutate(name = str_replace_all(name, "Grand Total", "Virginia")) %>% 
+  mutate(geography = 
+           case_when(
+             name == "Virginia" ~ "State",
+             TRUE ~ geography
+  ))
+
+```
+
+# Data export
+
+```{r export}
+
+# Save home sales data
+
+write_csv(full_data, "data/home-sales.csv")
+
+```
+
+# Dashboard development
+
+Reserved for future Shiny app development.
