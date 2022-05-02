@@ -1,5 +1,5 @@
 ---
-title: "Sourcebook > Affordability > HUD AMI"
+title: "Sourcebook > Affordability > HUD AMI limits"
 subtitle: "Data sources and methods"
 author: "HousingForward Virginia"
 date: "Updated on `r Sys.Date()`"
@@ -13,20 +13,38 @@ output:
 
 # Data sources
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE,
-                      out.width = "100%",
-                      out.extra = 'style="border:none;"')
+### U.S. Department of Housing and Urban Development {-}
 
+Area Median Income (AMI) data is published by the U.S. Department of Housing and Urban Development and updated annually.
+
+Link: https://www.huduser.gov/portal/datasets/il.html
+
+# Setup
+
+```{r setup, message=FALSE, warning=FALSE}
+
+# Load packages and set global chunk options
+
+library(tidyverse)
 library(glue)
 library(httr)
 library(jsonlite)
-library(tidyverse)
-library(magrittr)
+
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  results = FALSE
+)
+
 ```
 
+# Data collection
 
-```{r data-collect}
+```{r collect, cache=TRUE}
+
+# Load HUD API token from .Renviron file
+
 hud_token <- Sys.getenv("hud_token")
 
 va_counties <- tigris::counties(state = "VA", cb = TRUE, resolution = "20m") %>%
@@ -34,32 +52,46 @@ va_counties <- tigris::counties(state = "VA", cb = TRUE, resolution = "20m") %>%
 
 #' We'll need to iterate over both years (2017:2021) and all of the counties for each year. 
 #' This requires two calls to `map_dfr()`, one nested within the other. 
-va_ami_data <- purrr::map_dfr(2017:2022, function(year) {
+
+va_ami_raw <- purrr::map_dfr(2017:2022, function(year) {
+  
   # Iterate over the counties for a specific year and return the result
+  
   purrr::map_dfr(va_counties, function(geoid) {
+    
     # Create the request URL by gluing together the geoid value and the URL string
+    
     url <- glue::glue("https://www.huduser.gov/hudapi/public/il/data/{geoid}99999")
     
     # Make the request - it requires a header with the api token
     # formatted as specified below and a query for the year
+    
     request <- httr::GET(url, 
                          httr::add_headers("Authorization" = glue::glue("Bearer {hud_token}")),
                          query = list(year = year))
     
     # Return the content as text (which will be JSON)
+    
     req_content <- httr::content(request, as = "text", encoding = "UTF-8")
     
     # Parse the JSON...
+    
     county_data <- req_content %>%
       jsonlite::fromJSON() %>%
       purrr::flatten_dfr() %>%
+      
       # The family size columns come through as list-columns so they need to 
       # be un-nested
+      
       tidyr::unnest(very_low:low) %>%
+      
       # We'll create a household size column as this information doesn't come 
       # through by default
+      
       dplyr::mutate(hh_size = 1:8) %>%
+      
       # The next steps process and format the data to align with the example format
+      
       tidyr::pivot_longer(cols = median_income:low,
                           names_to = "income_limit",
                           values_to = "value") %>%
@@ -74,14 +106,32 @@ va_ami_data <- purrr::map_dfr(2017:2022, function(year) {
       dplyr::select(-(counties_msa:metro_status))
     
     # Return the result
+    
     county_data
   })
-}) %>%
-  # When the final output is generated, arrange in a way that makes sense
+})
+
+```
+
+# Data prep
+
+```{r prep}
+  
+# When the final output is generated, arrange in a way that makes sense
+
+va_ami_data <- va_ami_raw %>% 
   dplyr::arrange(fips, year, income_limit, hh_size) %>%
   dplyr::select(year, metro_name, area_name, fips, county_name, 
                 income_limit, hh_size, value)
 
+```
+
+# Data export
+
+```{r export}
+
+# Save AMI data
 
 write_csv(va_ami_data, "data/virginia_ami.csv")
+
 ```
