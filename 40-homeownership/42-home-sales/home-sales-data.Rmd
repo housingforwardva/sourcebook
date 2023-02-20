@@ -36,6 +36,8 @@ knitr::opts_chunk$set(
 	results = FALSE
 )
 
+setwd("C:/Users/Jonathan/Documents/repos/sourcebook/40-homeownership/42-home-sales")
+
 ```
 
 # Data collection
@@ -58,6 +60,12 @@ var_hist_msa <- "raw/var_2014-2021_msa.xlsx"
 
 var_2022Q1_msa <- "raw/var_2022-Q1_msa.xlsx"
 
+# Set paths for combined data
+
+var_2022Q2 <- "raw/var_2022-Q2.xlsx"
+
+var_2022Q3 <- "raw/var_2022-Q3.xlsx"
+
 # Bring in locality data
 
 locality_raw <- var_hist_locality %>% 
@@ -74,6 +82,18 @@ locality_2022Q1 <- read_excel(var_2022Q1_locality,
   mutate(quarter = "2022 Q1",
          .before = 1)
 
+locality_2022Q2 <- read_excel(var_2022Q2,
+                              sheet = "SF CT CityCounty",
+                              skip = 4) %>% 
+  mutate(quarter = "2022 Q2",
+         .before = 1)
+
+locality_2022Q3 <- read_excel(var_2022Q3,
+                              sheet = "CityCounty SFCT",
+                              skip = 4) %>% 
+  mutate(quarter = "2022 Q3",
+         .before = 1)
+
 # Bring in MSA data
 
 msa_raw <- var_hist_msa %>% 
@@ -85,9 +105,21 @@ msa_raw <- var_hist_msa %>%
          .id = "quarter")
 
 msa_2022Q1 <- read_excel(var_2022Q1_msa,
-                              sheet = "SF CT",
-                              skip = 4) %>% 
+                         sheet = "SF CT",
+                         skip = 4) %>% 
   mutate(quarter = "2022 Q1",
+         .before = 1)
+
+msa_2022Q2 <- read_excel(var_2022Q2,
+                         sheet = "SF CT MSA",
+                         skip = 4) %>% 
+  mutate(quarter = "2022 Q2",
+         .before = 1)
+
+msa_2022Q3 <- read_excel(var_2022Q3,
+                         sheet = "MSA SFCT",
+                         skip = 4) %>% 
+  mutate(quarter = "2022 Q3",
          .before = 1)
 
 ```
@@ -100,13 +132,13 @@ msa_2022Q1 <- read_excel(var_2022Q1_msa,
 # Add geography type variable
 
 locality_data <- locality_raw %>%
-  bind_rows(locality_2022Q1) %>% 
+  bind_rows(locality_2022Q1, locality_2022Q2, locality_2022Q3) %>% 
   mutate(geography = "Locality",
          .before = 1) %>% 
   rename(name = 'City County')
 
 msa_data <- msa_raw %>% 
-  bind_rows(msa_2022Q1) %>% 
+  bind_rows(msa_2022Q1, msa_2022Q2, msa_2022Q3) %>% 
   mutate(geography = "MSA",
          .before = 1) %>% 
   rename(name = 'MSA') %>% 
