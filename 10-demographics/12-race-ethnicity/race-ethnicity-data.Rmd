@@ -40,17 +40,27 @@ knitr::opts_chunk$set(echo=TRUE, message=FALSE, warning=FALSE)
 
 # Data collection
 
-```{r collect}
+```{r data}
 
 # Download population counts by race and ethnicity from PEP for each Virginia locality from 2010 to 2019
 
-race_ethnicity_raw <- get_estimates(
+race_2010s <- get_estimates(
   geography = "county",
   state = "VA",
   product = "characteristics",
   breakdown = c("RACE", "HISP"),
   breakdown_labels = TRUE,
   year = 2019,
+  time_series = TRUE
+)
+
+race_2020s <- get_estimates(
+  geography = "county",
+  state = "VA",
+  product = "characteristics",
+  breakdown = c("RACE", "HISP"),
+  breakdown_labels = TRUE,
+  year = 2020,
   time_series = TRUE
 )
 

@@ -48,11 +48,13 @@ knitr::opts_chunk$set(echo=TRUE, message=FALSE, warning=FALSE)
 
 # Data collection
 
-```{r pop-collect}
+```{r pop-data}
 
-# Download total population counts from PEP for each Virginia locality from 2010 to 2019
+# Download total population counts from PEP for each Virginia locality from 2010 to 2022.
 
-pep_total_raw <- get_estimates(
+# Get data from the 2010s first.
+
+pep_2010s <- get_estimates(
   geography = "county",
   state = "VA",
   variables = "POP",
@@ -60,35 +62,9 @@ pep_total_raw <- get_estimates(
   time_series = TRUE
 )
 
-# Download components of population change from PEP for each Virginia locality from 2010 to 2019
+# Clean the data from the 2010s.
 
-pep_change_raw <- get_estimates(
-  geography = "county",
-  state = "VA",
-  variables = c("NATURALINC", "DOMESTICMIG", "INTERNATIONALMIG"),
-  year = 2019,
-  time_series = TRUE
-)
-
-# Download total population counts from 2020 Census summary file for each Virginia locality
-
-census_raw <- get_decennial(
-  geography = "county",
-  state = "VA",
-  year = 2020,
-  sumfile = "pl",
-  variables = "P1_001N"
-)
-
-```
-
-# Data prep
-
-```{r pop-prep}
-
-# Prep total population counts from PEP
-
-pep_total_clean <- pep_total_raw %>%
+pep_2010s_clean <- pep_2010s %>%
   filter(!DATE %in% c(2, 3)) %>% # Remove non-decennial 2010 counts
   mutate(year = # Translate date codes into years
     case_when(
@@ -113,7 +89,35 @@ pep_total_clean <- pep_total_raw %>%
     value
   )
 
-# Prep total population counts from 2020 Census summary file
+# Get data from the 2020s to-date. 
+
+pep_2020s <- get_estimates(
+  geography = "county",
+  state = "VA",
+  variables = "POPESTIMATE",
+  year = 2022,
+  time_series = TRUE
+)
+
+pep_2020s_clean <- pep_2020s |> 
+  filter(year != 2020) |> 
+  mutate(counttype = "Population estimate") |> 
+    select( # Simplify columns
+    GEOID,
+    year,
+    counttype,
+    value
+  )
+
+# Get 2020 Decennial Census data.
+
+census_raw <- get_decennial(
+  geography = "county",
+  state = "VA",
+  year = 2020,
+  sumfile = "pl",
+  variables = "P1_001N"
+)
 
 census_clean <- census_raw %>% 
   mutate(year = "2020", # Add year and count type columns
@@ -125,14 +129,32 @@ census_clean <- census_raw %>%
     value
   )
 
-# Append 2020 Census counts to PEP time series
+#  Combine total population data.
 
-population_data <- pep_total_clean %>% 
-  bind_rows(census_clean)
+population_data <- rbind(pep_2010s_clean, pep_2020s_clean, census_clean)
 
-# Prep components of population change from PEP
+```
 
-pep_change_clean <- pep_change_raw %>% 
+```{r pop-change}
+# Download components of population change from PEP for each Virginia locality from 2010 to 2019
+
+change_2010s <- get_estimates(
+  geography = "county",
+  state = "VA",
+  variables = c("NATURALINC", "DOMESTICMIG", "INTERNATIONALMIG"),
+  year = 2019,
+  time_series = TRUE
+)
+
+change_2020s <- get_estimates(
+  geography = "county",
+  state = "VA",
+  variables = c("NATURALCHG", "DOMESTICMIG", "INTERNATIONALMIG"),
+  year = 2022,
+  time_series = TRUE
+)
+
+change_2010s_clean <- change_2010s %>% 
   mutate(year = # Translate date codes into years
     case_when(
       PERIOD == 1 ~ "2010",
@@ -157,7 +179,23 @@ pep_change_clean <- pep_change_raw %>%
     value
   )
 
+change_2020s_clean <- change_2020s %>%
+  mutate(component = # Rename components of change
+    case_when(
+      variable == "NATURALCHG" ~ "Natural increase",
+      variable == "DOMESTICMIG" ~ "Domestic migration",
+      variable == "INTERNATIONALMIG" ~ "International migration")) %>% 
+  select( # Simplify columns
+    GEOID,
+    year,
+    component,
+    value
+  ) 
+  
+pep_change_clean <- rbind(change_2010s_clean, change_2020s_clean)
+
 ```
+
 
 # Data export
 
