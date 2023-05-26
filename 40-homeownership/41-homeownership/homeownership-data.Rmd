@@ -49,7 +49,7 @@ knitr::opts_chunk$set(echo=TRUE, message=FALSE, warning=FALSE)
 # Data collection
 ```{r data-collect}
 # Create an object for all years.
-years <- 2010:2020
+years <- 2010:2021
 
 # Create an object for all tables needed. This includes a table that aggregates 
 # to total housing units.
@@ -71,11 +71,11 @@ concept_to_race <- function(x) {
 }
 
 # Pull the table variables, excluding Puerto Rico.
-b25003_defns <- load_variables(2019, "acs5") %>%
+b25003_defns <- load_variables(2021, "acs5") %>%
   filter(str_sub(name, end = 6) %in% b25003) %>% 
   filter(str_detect(name, "PR") == FALSE)
 
-b25007_defns <- load_variables(2019, "acs5") %>%
+b25007_defns <- load_variables(2021, "acs5") %>%
   filter(str_sub(name, end = 6) %in% b25007)%>%
   filter(str_detect(name, "PR")== FALSE)
 

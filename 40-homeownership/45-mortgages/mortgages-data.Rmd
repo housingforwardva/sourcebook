@@ -91,7 +91,7 @@ col_spec <- cols_only(
 # - We convert the HTTP request result to text then read in the CSV; 
 # we pass our column specification defined above to `col_types` to align each dataset
 # correctly.
-hmda_pull <- map_dfr(2018:2020, ~{
+hmda_pull <- map_dfr(2018:2021, ~{
   GET("https://ffiec.cfpb.gov/v2/data-browser-api/view/csv", 
       query = list(
         states = "VA",
@@ -112,6 +112,6 @@ hmda_pull <- map_dfr(2018:2020, ~{
 ```{r data-export}
 #' Writing out the raw loan-level data; there are interesting analyses that could be done as-is
 #' or many ways to do custom aggregations given that we have tract-level information
-write_csv(hmda_pull, "data/hmda_2018to2020.csv")
+write_csv(hmda_pull, "data/hmda_2018to2021.csv")
 
 ```
