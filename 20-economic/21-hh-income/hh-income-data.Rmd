@@ -61,7 +61,7 @@ knitr::opts_chunk$set(echo=TRUE, message=FALSE, warning=FALSE)
 
 # Create object for years.
 
-years <- 2010:2020
+years <- 2010:2021
 
 # Create objects for tables needed, which will be B25119, B19013, and B19049.
 
@@ -71,7 +71,7 @@ b19049 <- "B19049"
 b25118 <- "B25118"
 
 # Get variables for Table B25119 and clean the variables.
-b25119_defns <- load_variables(2019, "acs5") %>%
+b25119_defns <- load_variables(2021, "acs5") %>%
   filter(str_sub(name, end = 6) %in% b25119) %>%
   filter(str_detect(name, "PR") == FALSE)
 
@@ -80,17 +80,17 @@ b25119_cleaned <- b25119_defns %>%
   select(variable = name, medianhhincome, tenure) %>%
   mutate(across(.fns = ~replace_na(.x, "All")),
          across(.fns = ~str_remove_all(.x, ":")),
-         across(.fns = ~str_remove_all(.x, " in the past 12 months \\(\\in 2019 inflation-adjusted dollars\\)\\ --")))
+         across(.fns = ~str_remove_all(.x, " in the past 12 months \\(\\in 2021 inflation-adjusted dollars\\)\\ --")))
 
 # Get variables for Table B19013, then create a function to pull race or ethnicity
 # from the variables. 
-b19013_defns <- load_variables(2019, "acs5") %>%
+b19013_defns <- load_variables(2021, "acs5") %>%
   filter(str_sub(name, end = 7) %in% b19013) %>%
   filter(str_detect(name, "PR") == FALSE)
 
 concept_to_race <- function(x) {
   out <- x %>%
-    str_remove_all("MEDIAN HOUSEHOLD INCOME IN THE PAST 12 MONTHS \\(\\IN 2019 INFLATION-ADJUSTED DOLLARS\\)\\ \\(|\\)") %>%
+    str_remove_all("MEDIAN HOUSEHOLD INCOME IN THE PAST 12 MONTHS \\(\\IN 2021 INFLATION-ADJUSTED DOLLARS\\)\\ \\(|\\)") %>%
     str_to_title()
 }
 
@@ -100,11 +100,13 @@ b19013_cleaned <- b19013_defns %>%
   separate(label, c("estimate", "medhhincome"), sep = "!!") %>%
   select(variable = name, medhhincome, race) %>%
   mutate(across(.fns = ~replace_na(.x, "All")),
-          across(.fns = ~str_remove_all(.x, ":")))
+          across(.fns = ~str_remove_all(.x, ":")),
+         across(.fns = ~str_remove_all(.x, "Householder")),
+         across(.fns = ~str_remove_all(.x, "Alone")))
 
 
 # Get variables for Table B19049 and clean the variables.
-b19049_defns <- load_variables(2019, "acs5") %>%
+b19049_defns <- load_variables(2021, "acs5") %>%
   filter(str_sub(name, end = 6) %in% b19049) %>%
   filter(str_detect(name, "PR") == FALSE)
 
@@ -116,7 +118,7 @@ b19049_cleaned <- b19049_defns %>%
          across(.fns =~ str_remove_all(.x, "in the past 12 months \\(\\in 2019 inflation-adjusted dollars\\)\\ --")))
 
 # Get variables for Table B25118 and clean the variables. 
-b25118_defns <- load_variables(2019, "acs5") %>%
+b25118_defns <- load_variables(2021, "acs5") %>%
   filter(str_sub(name, end = 6) %in% b25118) %>%
   filter(str_detect(name, "PR") == FALSE)
 
@@ -205,7 +207,7 @@ output_b19013_locality <- map_dfr(b19013, function(tb) {
     acs_rearranged <- acs_pull %>%
       mutate(year = yr) %>%
       select(variable, year, locality = NAME, fips = GEOID, race, medhhincome,
-             estimate, moe)
+             estimate, moe) 
     
     acs_rearranged
   })
@@ -364,7 +366,7 @@ adjustment_dfs <- list(output_b19013_locality, output_b19013_cbsa, output_b19013
                    output_b25119_locality, output_b25119_cbsa, output_b25119_state) 
 
 adjustment <- function(x) {
-  transform(x, dollars20 = ((381.2/priceindex)*estimate))
+  transform(x, dollars21 = ((399.2/priceindex)*estimate))
 }
 
 
