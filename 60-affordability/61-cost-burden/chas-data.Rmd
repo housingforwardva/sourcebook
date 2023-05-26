@@ -85,7 +85,7 @@ library(janitor)
 years <- 2012:2019
 
 # Tables to get
-tables <- c(1:5, 7:13, "14A", "14B", paste0(15, LETTERS[1:3]), 16, "17A", "17B", paste0(18, LETTERS[1:3]))
+tables <- c(7,9, paste0(18, LETTERS[1:3]))
 
 # tables <- c(7:13, "14A", "14B", paste0(15, LETTERS[1:3]), 16, "17A", "17B", paste0(18, LETTERS[1:3]))
 
@@ -127,7 +127,7 @@ walk(tables, function(table) {
       mutate(county = case_when(
         county == "Bedford city" ~ "Bedford County",
         TRUE ~ county
-      ))
+      )) 
     
     # Account for different data dictionaries
     # Find the data dictionary in the appropriate folder
@@ -151,6 +151,20 @@ walk(tables, function(table) {
   write_csv(mytable, glue("{file_name}"))
   
 })
+
+Table7 <- read_csv("Table7_2012to2019.csv") |> 
+  filter(Line_Type == "Detail")
+
+Table9 <- read_csv("Table9_2012to2019.csv") |> 
+  filter(Line_Type == "Detail")
+
+Table18c <- read_csv("Table18C_2012to2019.csv") |> 
+  filter(Line_Type == "Detail")
+
+write_csv(Table7, "data/Table7.csv")
+write_csv(Table9, "data/Table9.csv")
+write_csv(Table18c, "data/Table18c.csv")
+
 
 ```
 ## Data Visualization
