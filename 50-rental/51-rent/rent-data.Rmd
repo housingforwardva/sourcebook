@@ -49,9 +49,9 @@ knitr::opts_chunk$set(echo=TRUE, message=FALSE, warning=FALSE, eval = FALSE)
 # Data collection
 ```{r data-collect}
 # Create an object for years.
-years_full <- 2010:2020
+years_full <- 2010:2021
 years_partial_1 <- 2010:2014
-years_partial_2 <- 2015:2020
+years_partial_2 <- 2015:2021
 
 # Create object for tables.
 b25063 <- "B25063"
@@ -59,7 +59,7 @@ b25064 <- "B25064"
 
 # Get variables from tables.
 
-b25063_defns_2020 <- load_variables(2020, "acs5") %>%
+b25063_defns_2021 <- load_variables(2021, "acs5") %>%
   filter(str_sub(name, end = 6) == b25063) %>%
   filter(str_detect(name, "PR") == FALSE)
 
@@ -67,7 +67,7 @@ b25063_defns_2014 <- load_variables(2014, "acs5") %>%
   filter(str_sub(name, end = 6) == b25063) %>%
   filter(str_detect(name, "PR") == FALSE)
 
-b25064_defns <- load_variables(2020, "acs5") %>%
+b25064_defns <- load_variables(2021, "acs5") %>%
   filter(str_sub(name, end = 6) == b25064) %>%
   filter(str_detect(name, "PR") == FALSE)
 
@@ -79,7 +79,7 @@ b25063_cleaned_2014 <- b25063_defns_2014 %>%
   mutate(across(.fns = ~replace_na(.x, "All")),
          across(.fns = ~str_remove_all(.x, ":")))
 
-b25063_cleaned_2020 <- b25063_defns_2020 %>%
+b25063_cleaned_2021 <- b25063_defns_2021 %>%
   separate(label, into = c("est", "total", "cash", "rent"), sep = "!!") %>%
   select(variable = name, cash, rent) %>%
   mutate(across(.fns = ~replace_na(.x, "All")),
@@ -115,14 +115,14 @@ output_b25063_2014 <- map_dfr(years_partial_1, function(yr){
   acs_rearranged
 })
 
-output_b25063_2020 <- map_dfr(years_partial_2, function(yr){
+output_b25063_2021 <- map_dfr(years_partial_2, function(yr){
   acs_pull <- get_acs(
     geography = "county",
     table = b25063,
     year = yr,
     state = "VA"
   ) %>%
-    left_join(b25063_cleaned_2020, by = "variable")
+    left_join(b25063_cleaned_2021, by = "variable")
   
   acs_rearranged <- acs_pull %>%
     mutate(year = yr) %>%
@@ -132,7 +132,7 @@ output_b25063_2020 <- map_dfr(years_partial_2, function(yr){
   acs_rearranged
 })
 
-output_b25064_locality <- map_dfr(years, function(yr){
+output_b25064_locality <- map_dfr(years_full, function(yr){
   acs_pull <- get_acs(
     geography = "county",
     table = b25064,
@@ -149,7 +149,7 @@ output_b25064_locality <- map_dfr(years, function(yr){
   acs_rearranged
 })
 
-output_b25064_cbsa <- map_dfr(years, function(yr){
+output_b25064_cbsa <- map_dfr(years_full, function(yr){
   acs_pull <- get_acs(
     geography = "cbsa",
     table = b25064,
@@ -166,7 +166,7 @@ output_b25064_cbsa <- map_dfr(years, function(yr){
   acs_rearranged
 })
 
-output_b25064_state <- map_dfr(years, function(yr){
+output_b25064_state <- map_dfr(years_full, function(yr){
   acs_pull <- get_acs(
     geography = "state",
     table = b25064,
@@ -182,7 +182,7 @@ output_b25064_state <- map_dfr(years, function(yr){
   acs_rearranged
 })
 
-output_b25063 <- rbind(output_b25063_2014, output_b25063_2020)
+output_b25063 <- rbind(output_b25063_2014, output_b25063_2021)
 ```
 
 # Data prep
@@ -204,23 +204,43 @@ $CPI_2$ is the average annual CPI for the given year.
 
 ```{r data-prep}
 
+library(fredr)
+
+# 
+
+# look <- fredr_series_search_text(search_text = "All items less shelter")
+
+
+cpi_rent <- fredr(
+  series_id = "CUSR0000SEHA"
+) |> 
+  select(date, value) |> 
+  mutate(date = as.Date(date),
+         value = as.numeric(value),
+         year = year(date)) |> 
+  group_by(year) |> 
+  summarise(index = mean(value))
+
+adjustment <- function(x) {
+  transform(x, dollars21 = ((349.1343/index)*estimate))
+}
 
 # Load the raw csv data file of CPI values by month for CPI for all items less shelter.
-cpi <- read_csv("raw\\CUUR0000SA0L2.csv")
+# cpi <- read_csv("raw\\CUUR0000SA0L2.csv")
 
 # Create a column based on the year of CPI value.
-cpi$year <- floor_date(cpi$DATE, "year")
+# cpi$year <- floor_date(cpi$DATE, "year")
 
 # Rename columns and ensure that CPI value is a numeric value.
-cpi <- cpi %>%
-  rename(cpi_value = CUUR0000SA0L2) %>%
-  transform(cpi_value = as.numeric(cpi_value))
+# cpi <- cpi %>%
+#   rename(cpi_value = CUUR0000SA0L2) %>%
+#   transform(cpi_value = as.numeric(cpi_value))
 
 # Summarize CPI by year to get average annual CPI. 
-annual_cpi <- cpi %>%
-  group_by(year) %>%
-  summarize(mean = mean(cpi_value))%>%
-  mutate(year = as.integer(substring(year, 1,4)))
+# annual_cpi <- cpi %>%
+#   group_by(year) %>%
+#   summarize(mean = mean(cpi_value))%>%
+#   mutate(year = as.integer(substring(year, 1,4)))
 
 # Join B25064 tables to the Annual CPI table based on year and then create a 
 # column for 2020 dollar value (dollars20) that utilizes the formula above.
