@@ -210,6 +210,8 @@ library(fredr)
 
 # look <- fredr_series_search_text(search_text = "All items less shelter")
 
+#  Consumer Price Index for All Urban Consumers: Rent of Primary Residence 
+# in U.S. City Average (CUSR0000SEHA)
 
 cpi_rent <- fredr(
   series_id = "CUSR0000SEHA"
@@ -248,19 +250,19 @@ adjustment <- function(x) {
 # The average annual CPI for 2020 is 235.67550.
 
 b25064_locality <- output_b25064_locality %>%
-  left_join(annual_cpi, by = 'year') %>%
-  rename(cpi = mean) %>%
-  mutate(dollars20 = ((235.67550/cpi)*estimate))
+  left_join(cpi_rent, by = 'year') %>%
+  rename(cpi = index) %>%
+  mutate(dollars21 = ((349.1343/cpi)*estimate))
 
 b25064_cbsa <- output_b25064_cbsa %>%
-  left_join(annual_cpi, by = 'year') %>%
-  rename(cpi = mean) %>%
-  mutate(dollars20 = ((235.67550/cpi)*estimate))
+  left_join(cpi_rent, by = 'year') %>%
+  rename(cpi = index) %>%
+  mutate(dollars21 = ((349.1343/cpi)*estimate))
 
 b25064_state <- output_b25064_state %>%
-  left_join(annual_cpi, by = 'year') %>%
-  rename(cpi = mean) %>%
-  mutate(dollars20 = ((235.67550/cpi)*estimate))
+  left_join(cpi_rent, by = 'year') %>%
+  rename(cpi = index) %>%
+  mutate(dollars21 = ((349.1343/cpi)*estimate))
 ```
 
 
