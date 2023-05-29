@@ -44,11 +44,11 @@ knitr::opts_chunk$set(
 
 # Collect building permits data
 
-years <- 2000:2020
+years <- 2000:2022
 
 # Generate the appropriate names for the data
 
-header_rows <- read_csv("https://www2.census.gov/econ/bps/County/co2020a.txt", 
+header_rows <- read_csv("https://www2.census.gov/econ/bps/County/co2022a.txt", 
                         col_names = FALSE,
                         n_max = 2)
 
@@ -77,6 +77,13 @@ cbps_raw <- map_df(years, ~{
   
 })
 
+cbps_ytd <- read_csv("https://www2.census.gov/econ/bps/County/co2304y.txt", 
+                     col_names = FALSE,
+                     skip = 2) |> 
+  select(X1:X18) |> 
+  set_names(column_names) |> 
+  mutate(`Survey: Date` = 2023)
+
 ```
 
 # Data prep
@@ -85,7 +92,9 @@ cbps_raw <- map_df(years, ~{
 
 # Filter data for Virginia and put into tidy format
 
+
 cbps_data <- cbps_raw %>% 
+  rbind(cbps_ytd) |> 
   mutate(year = `Survey: Date`,
          GEOID = paste0(`FIPS: State`, `FIPS: County`)) %>%
   select(`1-unit: Bldgs`:GEOID) %>%
