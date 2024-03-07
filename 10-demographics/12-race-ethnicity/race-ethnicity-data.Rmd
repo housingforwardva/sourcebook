@@ -52,7 +52,35 @@ race_2010s <- get_estimates(
   breakdown_labels = TRUE,
   year = 2019,
   time_series = TRUE
-)
+) %>%
+  filter(!DATE %in% c(2, 3)) %>% # Remove non-decennial 2010 counts
+  filter(!str_detect(RACE, "combination")) %>% # Remove counts for "in combination" race categories for simplicity
+  mutate(year = # Translate date codes into years
+    case_when(
+      DATE == 1 ~ "2010",
+      DATE == 4 ~ "2011",
+      DATE == 5 ~ "2012",
+      DATE == 6 ~ "2013",
+      DATE == 7 ~ "2014",
+      DATE == 8 ~ "2015",
+      DATE == 9 ~ "2016",
+      DATE == 10 ~ "2017",
+      DATE == 11 ~ "2018",
+      DATE == 12 ~ "2019")) %>% 
+  mutate(counttype = # Add descriptions to count types
+      case_when(
+        DATE == 1 ~ "Census population",
+        TRUE ~ "Population estimate")) %>% 
+  select( # Simplify columns
+    GEOID,
+    NAME,
+    year,
+    counttype,
+    race = RACE,
+    hisp = HISP,
+    value
+  )
+
 
 race_2020s <- get_estimates(
   geography = "county",
@@ -60,13 +88,26 @@ race_2020s <- get_estimates(
   product = "characteristics",
   breakdown = c("RACE", "HISP"),
   breakdown_labels = TRUE,
-  year = 2020,
+  year = 2022,
   time_series = TRUE
-)
+) %>%
+  filter(!str_detect(RACE, "combination")) %>% # Remove counts for "in combination" race categories for simplicity
+  mutate(counttype = "Population estimate") |> 
+  select( # Simplify columns
+    GEOID,
+    NAME,
+    year,
+    counttype,
+    race = RACE,
+    hisp = HISP,
+    value
+  )
+
 
 # Get race and ethnicity variables from the 2020 Census summary file
 
-census_vars <- load_variables(2020, "pl")
+census_vars <- load_variables(2020, "pl") |> 
+  mutate(variable = name)
 
 census_vars_race <- c(
   "P1_001N", # All races
@@ -96,48 +137,9 @@ census_raw <- get_decennial(
   year = 2020,
   sumfile = "pl",
   variables = census_vars_race
-)
-
-```
-
-# Data prep
-
-```{r prep}
-
-# Prep total population counts from PEP
-
-race_ethnicity_clean <- race_ethnicity_raw %>%
-  filter(!DATE %in% c(2, 3)) %>% # Remove non-decennial 2010 counts
-  filter(!str_detect(RACE, "combination")) %>% # Remove counts for "in combination" race categories for simplicity
-  mutate(year = # Translate date codes into years
-    case_when(
-      DATE == 1 ~ "2010",
-      DATE == 4 ~ "2011",
-      DATE == 5 ~ "2012",
-      DATE == 6 ~ "2013",
-      DATE == 7 ~ "2014",
-      DATE == 8 ~ "2015",
-      DATE == 9 ~ "2016",
-      DATE == 10 ~ "2017",
-      DATE == 11 ~ "2018",
-      DATE == 12 ~ "2019")) %>% 
-  mutate(counttype = # Add descriptions to count types
-      case_when(
-        DATE == 1 ~ "Census population",
-        TRUE ~ "Population estimate")) %>% 
-  select( # Simplify columns
-    GEOID,
-    year,
-    counttype,
-    race = RACE,
-    hisp = HISP,
-    value
-  )
-
-# Create and add labels to race and ethnicity variables from 2020 Census summary file
-
-census_labels_race <- census_vars %>% 
-  filter(name %in% census_vars_race) %>%
+) %>% 
+  filter(variable %in% census_vars_race) |> 
+  left_join(census_vars, by = "variable")%>%
   separate(label, into = c("col1", "col2", "col3", "col4", "col5"), sep = "!!") %>% 
   mutate(across(.fns = ~str_remove_all(.x, ":")),
          across(.fns = ~replace_na(.x, "All"))) %>% 
@@ -163,18 +165,88 @@ census_labels_race <- census_vars %>%
     across(.fns = ~str_replace_all(.x, "Black or African American alone", "Black alone"))
     ) %>% 
   select(
+    GEOID,
+    NAME,
     variable = name,
     race = col4,
-    hisp = col3
+    hisp = col3, 
+    value
   )
+
+race_ethnicity_raw <- rbind(race_2010s, race_2020s) |> 
+  filter(year != 2020)
+
+
+```
+
+# Data prep
+
+```{r prep}
+
+# Prep total population counts from PEP
+
+# race_ethnicity_clean <- race_ethnicity_raw %>%
+#   filter(!DATE %in% c(2, 3)) %>% # Remove non-decennial 2010 counts
+#   filter(!str_detect(RACE, "combination")) %>% # Remove counts for "in combination" race categories for simplicity
+#   mutate(year = # Translate date codes into years
+#     case_when(
+#       DATE == 1 ~ "2010",
+#       DATE == 4 ~ "2011",
+#       DATE == 5 ~ "2012",
+#       DATE == 6 ~ "2013",
+#       DATE == 7 ~ "2014",
+#       DATE == 8 ~ "2015",
+#       DATE == 9 ~ "2016",
+#       DATE == 10 ~ "2017",
+#       DATE == 11 ~ "2018",
+#       DATE == 12 ~ "2019")) %>% 
+#   mutate(counttype = # Add descriptions to count types
+#       case_when(
+#         DATE == 1 ~ "Census population",
+#         TRUE ~ "Population estimate")) %>% 
+#   select( # Simplify columns
+#     GEOID,
+#     year,
+#     counttype,
+#     race = RACE,
+#     hisp = HISP,
+#     value
+#   )
+
+# Create and add labels to race and ethnicity variables from 2020 Census summary file
+
+# census_labels_race <- census_vars %>% 
+#   filter(name %in% census_vars_race) %>%
+#   separate(label, into = c("col1", "col2", "col3", "col4", "col5"), sep = "!!") %>% 
+#   mutate(across(.fns = ~str_remove_all(.x, ":")),
+#          across(.fns = ~replace_na(.x, "All"))) %>% 
+#   mutate(
+#     col4 = case_when(
+#       col5 == "White alone" ~ col5,
+#       col5 == "Black or African American alone" ~ col5,
+#       col5 == "American Indian and Alaska Native alone" ~ col5,
+#       col5 == "Asian alone" ~ col5,
+#       col5 == "Native Hawaiian and Other Pacific Islander alone" ~ col5,
+#       col5 == "Some Other Race alone" ~ col5,
+#       col3 == "Population of two or more races" ~ "Population of two or more races",
+#       col4 == "All" ~ "All races",
+#       TRUE ~ col4),
+#     col3 = case_when(
+#       col3 == "Population of one race" ~ "Both Hispanic Origins",
+#       col3 == "Population of two or more races" ~ "Both Hispanic Origins",
+#       col3 == "All" ~ "Both Hispanic Origins",
+#       col3 == "Hispanic or Latino" ~ "Hispanic",
+#       col3 == "Not Hispanic or Latino" ~ "Non-Hispanic",
+#       TRUE ~ col3),
+#     across(.fns = ~str_replace_all(.x, "Population of two or more races", "Two or more races")),
+#     across(.fns = ~str_replace_all(.x, "Black or African American alone", "Black alone"))
+    # )
 
 # Prep total population counts from 2020 Census summary file
 
 census_clean <- census_raw %>%
-  left_join(census_labels_race, # Add race and ethnicity labels
-    by = "variable"
-  ) %>%
-  select(-c(variable, NAME)) %>% # Remove unnecessary columns
+  select(-c(variable)) %>% # Remove unnecessary columns
+  mutate(value = as.numeric(value)) |> 
   pivot_wider( # Pivot out values by Hispanic status
     names_from = "hisp",
     values_from = "value"
@@ -191,6 +263,7 @@ census_clean <- census_raw %>%
          counttype = "Census population") %>%
   select( # Simplify columns
     GEOID,
+    NAME,
     year,
     counttype,
     race,
@@ -200,7 +273,7 @@ census_clean <- census_raw %>%
 
 # Append 2020 Census data to PEP time series, remove unnecessary subtotals, and relabel variables
 
-race_ethnicity_data <- race_ethnicity_clean %>% 
+race_ethnicity_data <- race_ethnicity_raw %>% 
   bind_rows(census_clean) %>% 
   mutate(race = str_remove_all(race, " alone")) %>% # Remove "alone" from race column values
   filter( # Remove unnecessary subtotals to avoid double-counted data
