@@ -61,7 +61,7 @@ knitr::opts_chunk$set(echo=TRUE, message=FALSE, warning=FALSE)
 
 # Create object for years.
 
-years <- 2010:2021
+years <- 2010:2022
 
 # Create objects for tables needed, which will be B25119, B19013, and B19049.
 
@@ -71,7 +71,7 @@ b19049 <- "B19049"
 b25118 <- "B25118"
 
 # Get variables for Table B25119 and clean the variables.
-b25119_defns <- load_variables(2021, "acs5") %>%
+b25119_defns <- load_variables(2022, "acs5") %>%
   filter(str_sub(name, end = 6) %in% b25119) %>%
   filter(str_detect(name, "PR") == FALSE)
 
@@ -334,26 +334,52 @@ output_b25118 <- map_dfr(years, function(yr) {
 ```{r}
 # Median household income needs to be adjusted to make comparison between years. This is
 # done by utilizing the Annual Average Consumer Price Index Research Series (CPI-U-RS).
+# 
+library(fredr)
+library(lubridate)
 
-cpi <- read_excel("raw/CPI_U_RS.xlsx")
-cpi <- cpi %>% 
-  rename(year = Year,
-         priceindex = cpi_index)
+cpi <- fredr(
+  series_id = "CPIAUCSL" # ID for CPI for All Urban Consumers
+) |> 
+  select(date, value) |> # Select date and CPI
+  mutate(date = as.Date(date), # Convert date to date data type.
+         value = as.numeric(value), # Convert CPI to a numeric value.
+         year = year(date)) |> # Create a field for the year and extract year from date.
+  group_by(year) |> # Group by year. 
+  summarise(index = mean(value)) # Calculate annual average CPI. 
 
-# Join the CPI data frame to the median household income data frames.
-
-cpi_function <- function(x) {
-  x %>% 
-    left_join(cpi, by = 'year')
+# Create a function to convert median household income from ACS to most recent 
+# inflation-adjusted dollar value.
+adjustment <- function(x) {
+  transform(x, adjusted = ((292.62058/index)*estimate))
 }
+
+join_cpi <- function(x) { 
+  x |> 
+  left_join(cpi, by = "year")
+}
+
+# 
+# cpi <- read_excel("raw/CPI_U_RS.xlsx")
+# cpi <- cpi %>% 
+#   rename(year = Year,
+#          priceindex = cpi_index)
+# 
+# # Join the CPI data frame to the median household income data frames.
+# 
+# cpi_function <- function(x) {
+#   x %>% 
+#     left_join(cpi, by = 'year')
+# }
 
 median_dfs <- list(output_b19013_locality, output_b19013_cbsa, output_b19013_state,
                    output_b19049_locality, output_b19049_cbsa, output_b19049_state,
-                   output_b25119_locality, output_b25119_cbsa, output_b25119_state) 
+                   output_b25119_locality, output_b25119_cbsa, output_b25119_state)
 
 
-result <- median_dfs %>%
-  lapply(cpi_function)
+result <- median_dfs |> 
+  lapply(join_cpi) |> 
+  lapply(adjustment)
 
 names(result) = c('output_b19013_locality', 'output_b19013_cbsa', 'output_b19013_state',
                    'output_b19049_locality', 'output_b19049_cbsa', 'output_b19049_state',
@@ -365,20 +391,20 @@ adjustment_dfs <- list(output_b19013_locality, output_b19013_cbsa, output_b19013
                    output_b19049_locality, output_b19049_cbsa, output_b19049_state,
                    output_b25119_locality, output_b25119_cbsa, output_b25119_state) 
 
-adjustment <- function(x) {
-  transform(x, dollars21 = ((399.2/priceindex)*estimate))
-}
-
-
-dollar_result <- adjustment_dfs %>%
-  lapply(adjustment)
-
-
-names(dollar_result) = c('output_b19013_locality', 'output_b19013_cbsa', 'output_b19013_state',
-                   'output_b19049_locality', 'output_b19049_cbsa', 'output_b19049_state',
-                   'output_b25119_locality', 'output_b25119_cbsa', 'output_b25119_state')
-
-list2env(dollar_result, envir = .GlobalEnv)
+# adjustment <- function(x) {
+#   transform(x, dollars22 = ((292.62058/priceindex)*estimate))
+# }
+# 
+# 
+# dollar_result <- adjustment_dfs %>%
+#   lapply(adjustment)
+# 
+# 
+# names(dollar_result) = c('output_b19013_locality', 'output_b19013_cbsa', 'output_b19013_state',
+#                    'output_b19049_locality', 'output_b19049_cbsa', 'output_b19049_state',
+#                    'output_b25119_locality', 'output_b25119_cbsa', 'output_b25119_state')
+# 
+# list2env(dollar_result, envir = .GlobalEnv)
 
 ```
 
