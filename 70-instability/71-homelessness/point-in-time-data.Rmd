@@ -53,13 +53,13 @@ knitr::opts_chunk$set(
 # Create an object for years in character format. This is used to account for 
 # sheets in the Excel file and then combine later.
 
-years <- as.character(2007:2022)
+years <- as.character(2007:2023)
 
 # Create an object for the file path of the Excel file.
 
-path <- "raw/2007-2022-PIT-Counts-by-CoC.xlsx"
+path <- "raw/2007-2023-PIT-Counts-by-CoC.xlsx"
 
-data <- read_excel("raw/2007-2022-PIT-Counts-by-CoC.xlsx") |> 
+data <- read_excel("raw/2007-2023-PIT-Counts-by-CoC.xlsx") |> 
   clean_names()
 # Create a function to read through each sheet and then combine them into a single
 # dataframe.
@@ -80,14 +80,14 @@ full_set <- map_dfr(years, function(yr) {
     pit_renamed <- pit_set %>%
       rename_with(~str_remove(.x, suffix_to_remove)) %>%
       mutate(year = yr) %>%
-      select(co_c_number:co_c_name, co_c_category, type_of_count, year, everything()) %>%
+      select(co_c_number:co_c_name, co_c_category, overall_homeless, year) %>%
       mutate(across(-c(co_c_number:year), .fns = as.numeric))
   } else {
     pit_renamed <- pit_set %>%
       rename_with(~str_remove(.x, suffix_to_remove)) %>%
       mutate(year = yr, co_c_category = NA_character_, 
              type_of_count = NA_character_) %>%
-      select(co_c_number:co_c_name, co_c_category, type_of_count, year, everything()) %>%
+      select(co_c_number:co_c_name, co_c_category, overall_homeless, year) %>%
       mutate(across(-c(co_c_number:year), .fns = as.numeric))
   }
   
@@ -98,18 +98,22 @@ full_set <- map_dfr(years, function(yr) {
 })
 
 # An alternative approach, with a "category" column to reduce the large number of columns:
-full_set_longer <- full_set %>%
-  pivot_longer(
-    cols = overall_homeless:unsheltered_homeless_parenting_youth_under_25_multiple_races, 
-    names_to = "category",
-    values_to = "value"
-  )
+# full_set_longer <- full_set %>%
+#   pivot_longer(
+#     cols = overall_homeless:unsheltered_homeless_parenting_youth_under_25_multiple_races, 
+#     names_to = "category",
+#     values_to = "value"
+#   )
+
+
+full_set_va <- full_set |> 
+  filter(str_detect(co_c_number, "VA"))
 ```
 
 # Data export
 ```{r data-export}
 # write the file to csv.
 
-write_csv(full_set_longer, "data/va_pit_2007_2021.csv")
+write_csv(full_set_va, "data/va_pit.csv")
 ```
 
