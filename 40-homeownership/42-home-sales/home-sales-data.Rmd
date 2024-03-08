@@ -36,7 +36,7 @@ knitr::opts_chunk$set(
 	results = FALSE
 )
 
-setwd("C:/Users/Jonathan/Documents/repos/sourcebook/40-homeownership/42-home-sales")
+# setwd("C:/Users/Jonathan/Documents/repos/sourcebook/40-homeownership/42-home-sales")
 
 ```
 
@@ -73,6 +73,8 @@ var_2023Q1 <- "raw/var_2023-Q1.xlsx"
 var_2023Q2 <- "raw/var_2023-Q2.xlsx"
 
 var_2023Q3 <- "raw/var_2023-Q3.xlsx"
+
+var_2023Q4 <- "raw/var_2023-Q4.xlsx"
 
 # Bring in locality data
 
@@ -124,6 +126,12 @@ locality_2023Q3 <- read_excel(var_2023Q3,
                               sheet = "CityCounty SFCT",
                               skip = 4) %>% 
   mutate(quarter = "2023 Q3",
+         .before = 1)
+
+locality_2023Q4 <- read_excel(var_2023Q4,
+                              sheet = "CityCounty SFCT",
+                              skip = 4) %>% 
+  mutate(quarter = "2023 Q4",
          .before = 1)
 
 # Bring in MSA data
@@ -178,6 +186,12 @@ msa_2023Q3 <- read_excel(var_2023Q3,
   mutate(quarter = "2023 Q3",
          .before = 1)
 
+msa_2023Q4 <- read_excel(var_2023Q4,
+                         sheet = "MSA SFCT",
+                         skip = 4) %>% 
+  mutate(quarter = "2023 Q4",
+         .before = 1)
+
 ```
 
 # Data prep
@@ -188,13 +202,13 @@ msa_2023Q3 <- read_excel(var_2023Q3,
 # Add geography type variable
 
 locality_data <- locality_raw %>%
-  bind_rows(locality_2022Q1, locality_2022Q2, locality_2022Q3, locality_2022Q4, locality_2023Q1, locality_2023Q2, locality_2023Q3) %>% 
+  bind_rows(locality_2022Q1, locality_2022Q2, locality_2022Q3, locality_2022Q4, locality_2023Q1, locality_2023Q2, locality_2023Q3, locality_2023Q4) %>% 
   mutate(geography = "Locality",
          .before = 1) %>% 
   rename(name = 'City County')
 
 msa_data <- msa_raw %>% 
-  bind_rows(msa_2022Q1, msa_2022Q2, msa_2022Q3, msa_2022Q4, msa_2023Q1, msa_2023Q2, msa_2023Q3) %>% 
+  bind_rows(msa_2022Q1, msa_2022Q2, msa_2022Q3, msa_2022Q4, msa_2023Q1, msa_2023Q2, msa_2023Q3, msa_2023Q4) %>% 
   mutate(geography = "MSA",
          .before = 1) %>% 
   rename(name = 'MSA') %>% 
