@@ -49,9 +49,9 @@ knitr::opts_chunk$set(echo=TRUE, message=FALSE, warning=FALSE, eval = FALSE)
 # Data collection
 ```{r data-collect}
 # Create an object for years.
-years_full <- 2010:2021
+years_full <- 2010:2022
 years_partial_1 <- 2010:2014
-years_partial_2 <- 2015:2021
+years_partial_2 <- 2015:2022
 
 # Create object for tables.
 b25063 <- "B25063"
@@ -59,7 +59,7 @@ b25064 <- "B25064"
 
 # Get variables from tables.
 
-b25063_defns_2021 <- load_variables(2021, "acs5") %>%
+b25063_defns_2022 <- load_variables(2022, "acs5") %>%
   filter(str_sub(name, end = 6) == b25063) %>%
   filter(str_detect(name, "PR") == FALSE)
 
@@ -67,7 +67,7 @@ b25063_defns_2014 <- load_variables(2014, "acs5") %>%
   filter(str_sub(name, end = 6) == b25063) %>%
   filter(str_detect(name, "PR") == FALSE)
 
-b25064_defns <- load_variables(2021, "acs5") %>%
+b25064_defns <- load_variables(2022, "acs5") %>%
   filter(str_sub(name, end = 6) == b25064) %>%
   filter(str_detect(name, "PR") == FALSE)
 
@@ -79,7 +79,7 @@ b25063_cleaned_2014 <- b25063_defns_2014 %>%
   mutate(across(.fns = ~replace_na(.x, "All")),
          across(.fns = ~str_remove_all(.x, ":")))
 
-b25063_cleaned_2021 <- b25063_defns_2021 %>%
+b25063_cleaned_2022 <- b25063_defns_2022 %>%
   separate(label, into = c("est", "total", "cash", "rent"), sep = "!!") %>%
   select(variable = name, cash, rent) %>%
   mutate(across(.fns = ~replace_na(.x, "All")),
@@ -115,14 +115,14 @@ output_b25063_2014 <- map_dfr(years_partial_1, function(yr){
   acs_rearranged
 })
 
-output_b25063_2021 <- map_dfr(years_partial_2, function(yr){
+output_b25063_2022 <- map_dfr(years_partial_2, function(yr){
   acs_pull <- get_acs(
     geography = "county",
     table = b25063,
     year = yr,
     state = "VA"
   ) %>%
-    left_join(b25063_cleaned_2021, by = "variable")
+    left_join(b25063_cleaned_2022, by = "variable")
   
   acs_rearranged <- acs_pull %>%
     mutate(year = yr) %>%
@@ -182,7 +182,7 @@ output_b25064_state <- map_dfr(years_full, function(yr){
   acs_rearranged
 })
 
-output_b25063 <- rbind(output_b25063_2014, output_b25063_2021)
+output_b25063 <- rbind(output_b25063_2014, output_b25063_2022)
 ```
 
 # Data prep
@@ -198,7 +198,7 @@ year of the given value, then multiplying by the given value.
 $2020 dollars = \frac{CPI_1}{CPI_2} * yeardollars$ 
 
 where
-$CPI_1$ is the average annual CPI for 2020 and
+$CPI_1$ is the average annual CPI for 2022 and
 $CPI_2$ is the average annual CPI for the given year.
 
 
@@ -224,7 +224,7 @@ cpi_rent <- fredr(
   summarise(index = mean(value))
 
 adjustment <- function(x) {
-  transform(x, dollars21 = ((349.1343/index)*estimate))
+  transform(x, adjusted = ((370.2016/index)*estimate))
 }
 
 # Load the raw csv data file of CPI values by month for CPI for all items less shelter.
@@ -247,22 +247,20 @@ adjustment <- function(x) {
 # Join B25064 tables to the Annual CPI table based on year and then create a 
 # column for 2020 dollar value (dollars20) that utilizes the formula above.
 
-# The average annual CPI for 2020 is 235.67550.
+
 
 b25064_locality <- output_b25064_locality %>%
-  left_join(cpi_rent, by = 'year') %>%
-  rename(cpi = index) %>%
-  mutate(dollars21 = ((349.1343/cpi)*estimate))
+  left_join(cpi_rent, by = 'year') |> 
+  adjustment()
+
 
 b25064_cbsa <- output_b25064_cbsa %>%
-  left_join(cpi_rent, by = 'year') %>%
-  rename(cpi = index) %>%
-  mutate(dollars21 = ((349.1343/cpi)*estimate))
+  left_join(cpi_rent, by = 'year') |> 
+  adjustment()
 
 b25064_state <- output_b25064_state %>%
-  left_join(cpi_rent, by = 'year') %>%
-  rename(cpi = index) %>%
-  mutate(dollars21 = ((349.1343/cpi)*estimate))
+  left_join(cpi_rent, by = 'year') |> 
+  adjustment()
 ```
 
 
@@ -274,7 +272,7 @@ b25064_state <- output_b25064_state %>%
 write_csv(b25064_locality, "data/b25064_locality.csv")
 write_csv(b25064_cbsa, "data/b25064_cbsa.csv")
 write_csv(b25064_state, "data/b25064_state.csv")
-write_csv(output_b25063, "data/b25063_2010_2020.csv")
+write_csv(output_b25063, "data/b25063.csv")
 
 ```
 
