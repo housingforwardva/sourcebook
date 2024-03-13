@@ -16,7 +16,7 @@
     <WindowsPersistSimpleIdentifiers />
     <ZoneBackgroundTransparency />
   </document-format-change-manifest>
-  <repository-location id='Sourcebook-VirginiaUnemploymentRate' path='/workbooks' revision='1.4' />
+  <repository-location id='Sourcebook-VirginiaUnemploymentRate' path='/workbooks' revision='1.5' />
   <preferences>
     <preference name='ui.encoding.shelf.height' value='24' />
     <preference name='ui.shelf.height' value='26' />
@@ -1425,9 +1425,8 @@
             <column caption='Unemployment rate' datatype='real' name='[Calculation_731553532473942016]' role='measure' type='quantitative'>
               <calculation class='tableau' formula='SUM([value])/SUM([value (va_laborforce.csv)])' />
             </column>
-            <column-instance column='[date]' derivation='Attribute' name='[attr:date:ok]' pivot='key' type='ordinal' />
+            <column-instance column='[date (va_laborforce.csv)]' derivation='Attribute' name='[attr:date (va_laborforce.csv):ok]' pivot='key' type='ordinal' />
             <column caption='Date (Va Laborforce.Csv)' datatype='date' name='[date (va_laborforce.csv)]' role='dimension' type='ordinal' />
-            <column caption='Date' datatype='date' name='[date]' role='dimension' type='ordinal' />
             <column-instance column='[value (va_laborforce.csv)]' derivation='Sum' name='[sum:value (va_laborforce.csv):qk]' pivot='key' type='quantitative' />
             <column-instance column='[value]' derivation='Sum' name='[sum:value:qk]' pivot='key' type='quantitative' />
             <column-instance column='[date (va_laborforce.csv)]' derivation='Month-Trunc' name='[tmn:date (va_laborforce.csv):qk]' pivot='key' type='quantitative' />
@@ -1460,9 +1459,9 @@
             <mark class='Automatic' />
             <encodings>
               <color column='[federated.1mleg3k0a721jn10b1mlc1y2ip6c].[usr:Calculation_731553532473942016:qk]' />
-              <tooltip column='[federated.1mleg3k0a721jn10b1mlc1y2ip6c].[attr:date:ok]' />
               <tooltip column='[federated.1mleg3k0a721jn10b1mlc1y2ip6c].[sum:value:qk]' />
               <tooltip column='[federated.1mleg3k0a721jn10b1mlc1y2ip6c].[sum:value (va_laborforce.csv):qk]' />
+              <tooltip column='[federated.1mleg3k0a721jn10b1mlc1y2ip6c].[attr:date (va_laborforce.csv):ok]' />
               <lod column='[Parameters].[Great Recession (copy)]' />
             </encodings>
             <reference-line axis-column='[federated.1mleg3k0a721jn10b1mlc1y2ip6c].[tmn:date (va_laborforce.csv):qk]' enable-instant-analytics='true' formula='min' id='refline4' label-type='automatic' paired-id='refline5' scope='per-pane' symmetric='false' value-column='[Parameters].[Parameter 1]' z-order='1' />
@@ -1471,7 +1470,7 @@
             <reference-line axis-column='[federated.1mleg3k0a721jn10b1mlc1y2ip6c].[tmn:date (va_laborforce.csv):qk]' enable-instant-analytics='true' formula='max' id='refline8' label-type='none' paired-id='refline6' scope='per-table' symmetric='false' value-column='[Parameters].[COVID-19 pandemic (copy)_1549801286326472704]' z-order='4' />
             <customized-tooltip>
               <formatted-text>
-                <run fontcolor='#787878'><![CDATA[Date:	<[federated.1mleg3k0a721jn10b1mlc1y2ip6c].[attr:date:ok]>]]></run>
+                <run fontcolor='#787878'><![CDATA[Date:	<[federated.1mleg3k0a721jn10b1mlc1y2ip6c].[tmn:date (va_laborforce.csv):qk]>]]></run>
                 <run>Æ&#10;</run>
                 <run fontcolor='#787878'>Unemployed estimate:&#9;</run>
                 <run><![CDATA[<[federated.1mleg3k0a721jn10b1mlc1y2ip6c].[sum:value:qk]>
@@ -1708,7 +1707,7 @@
           <zoom type='entire-view' />
         </viewpoint>
       </viewpoints>
-      <active id='3' />
+      <active id='-1' />
       <grid grid-overlay-mode='on' />
       <simple-id uuid='{51D8776C-752A-4231-AC90-DE15CB2F1DBE}' />
     </window>
@@ -1829,6 +1828,7 @@
       <viewpoint>
         <highlight>
           <color-one-way>
+            <field>[federated.1mleg3k0a721jn10b1mlc1y2ip6c].[usr:Calculation_731553532473942016:qk]</field>
             <field>[federated.1mleg3k0a721jn10b1mlc1y2ip6c].[yr:date (va_laborforce.csv):ok]</field>
             <field>[federated.1mleg3k0a721jn10b1mlc1y2ip6c].[yr:date (va_laborforce_2008_2021.csv):ok]</field>
             <field>[federated.1mleg3k0a721jn10b1mlc1y2ip6c].[yr:date:ok]</field>
