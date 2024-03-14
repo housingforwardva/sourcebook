@@ -32,6 +32,7 @@ comparisons to the overall number of jobs.
 library(tidycensus)
 library(tidyverse)
 library(blscrapeR)
+library(readxl)
 library(tigris)
 knitr::opts_chunk$set(echo=TRUE, message=FALSE, warning=FALSE)
 ```
@@ -41,6 +42,36 @@ knitr::opts_chunk$set(echo=TRUE, message=FALSE, warning=FALSE)
 
 # Download total housing unit count from Population Estimates Program (PEP) and
 # Decennial Census P.L. 94-171 Redistricting Data.
+# 
+
+
+va_hu <- read_excel("raw/CO-EST2022-HU-51.xlsx", skip = 3) |> 
+  janitor::clean_names() |> 
+  rename(name_long = x1, base_estimate = x2) |> 
+  filter(name_long != "Virginia") |> 
+  mutate(across(1, ~str_replace(., ".", ""))) |> 
+  mutate(across(1, ~str_remove(., ", Virginia"))) |> 
+  drop_na() |> 
+  mutate(name_long = str_to_title(name_long))
+
+local_lookup <- read_csv("../../00-admin/va-cbsa-locality-lookup.csv")
+
+va_hu_join <- va_hu |> 
+  left_join(local_lookup, by = "name_long") |> 
+  mutate(fips_full = as.character(fips_full)) |> 
+  pivot_longer(2:5,
+               names_to = "year",
+               values_to = "estimate") |> 
+  filter(year != "base_estimate") |> 
+  mutate(year = case_when(
+    year == "x2020" ~ 2020,
+    year == "x2021" ~ 2021,
+    year == "x2022" ~ 2022
+  )) |> 
+  mutate(fips_full = as.character(fips_full)) |> 
+  select(name_long, fips_full, name_short, cbsa_title, estimate, year)
+  
+
 
 va_hu_localities <- get_estimates(
   geography = "county",
@@ -48,14 +79,14 @@ va_hu_localities <- get_estimates(
   variables = "HUEST",
   year = 2019,
   time_series = TRUE
-) 
-
-va_hu_localities_2020 <- get_estimates(
-  geography = "county",
-  state = "VA",
-  variables = "H1_001N",
-  year = 2021
 )
+# 
+# va_hu_localities_2020 <- get_estimates(
+#   geography = "county",
+#   state = "VA",
+#   variables = "H1_001N",
+#   year = 2021
+# )
 
 # The following pulls all localities in Virginia to help iterate through BLS series.
 # The TIGRIS package allows us to do this and pull FIPS codes.
@@ -100,9 +131,14 @@ va_jobs <- map_dfr(jobs_list, bls_jobs_pull) %>%
 ```{r}
 # Date codes in PEP data frame need to be converted to usable dates, and then PL 
 # data frame needs to have matching columns added.
+# 
 
-va_hu_localities <- va_hu_localities %>%
-  mutate(longdate = 
+local_lookup <- read_csv("../../00-admin/va-cbsa-locality-lookup.csv") |> 
+  mutate(fips_full = as.character(fips_full))
+
+
+va_hu_localities_join <- va_hu_localities %>%
+  mutate(longdate =
     case_when( # Add date values.
       DATE == 1 ~ "4/1/2010",
       DATE == 2 ~ "4/1/2010",
@@ -117,13 +153,13 @@ va_hu_localities <- va_hu_localities %>%
       DATE == 11 ~ "7/1/2018",
       DATE == 12 ~ "7/1/2019"
     ),
-counttype = 
+counttype =
       case_when( # Add description for data value type.
         DATE == 1 ~ "Census population",
         DATE == 2 ~ "Estimates base",
         TRUE ~ "Population estimate"
       ),
-year = 
+year =
   case_when( # Add year values.
     DATE == 1 ~ 2010,
       DATE == 2 ~ 2010,
@@ -137,29 +173,32 @@ year =
       DATE == 10 ~ 2017,
       DATE == 11 ~ 2018,
       DATE == 12 ~ 2019
-  )
-  )
-
-# Add matching columns with appropriate data to the PL data frame.
-
-va_hu_localities_2020 <- va_hu_localities_2020 %>%
-  mutate(DATE = 13,
-         longdate = "4/1/2020",
-         counttype = "Census population",
-         year = 2020)
-
+  )) |> 
+  mutate(fips_full = as.character(GEOID),
+         estimate = value) |> 
+  left_join(local_lookup, by = "fips_full") |> 
+  select(name_long, fips_full, name_short, cbsa_title, estimate, year)
+# 
+# # Add matching columns with appropriate data to the PL data frame.
+# 
+# va_hu_localities_2020 <- va_hu_localities_2020 %>%
+#   mutate(DATE = 13,
+#          longdate = "4/1/2020",
+#          counttype = "Census population",
+#          year = 2020)
+# 
 # Then combine the two data frames.
-
-va_hu <- rbind(va_hu_localities, va_hu_localities_2020)
+ 
+va_hu <- rbind(va_hu_localities_join, va_hu_join)
 
 
 # Combine the the housing unit and labor force data frames together based on year and FIPS.
 
 va_jobs_hu <- va_jobs %>%
-  left_join(va_hu, by = c('fips' = 'GEOID', 'year' = 'year'))
+  left_join(va_hu, by = c('fips' = 'fips_full', 'year' = 'year'))
 
 va_jobs_hu <- va_jobs_hu %>%
-  rename(employment = value.x, hu = value.y)
+  rename(employment = value, hu = estimate)
 ```
 
 # Data export
@@ -167,7 +206,7 @@ va_jobs_hu <- va_jobs_hu %>%
 ```{r}
 # Write to csv file.
 
-write_csv(va_jobs_hu, "data/va_jobs_housing_2010_2020.csv")
+write_csv(va_jobs_hu, "data/va_jobs_housing.csv")
 ```
 
 # Dashboard development
