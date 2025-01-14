@@ -9,6 +9,8 @@ output:
     toc: true
     toc_float: true
     number_sections: true
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -90,9 +92,13 @@ b19013_defns <- load_variables(2023, "acs5") %>%
 
 concept_to_race <- function(x) {
   out <- x %>%
-    str_remove_all("MEDIAN HOUSEHOLD INCOME IN THE PAST 12 MONTHS \\(\\IN 2023 INFLATION-ADJUSTED DOLLARS\\)\\ \\(|\\)") %>%
-    str_to_title()
+    str_remove_all("Median Household Income in the Past 12 Months \\(in 2023 Inflation-Adjusted Dollars\\)") %>%
+    str_extract("(?<=\\().*(?=\\))") %>%
+    str_trim()
+  
+  return(out)
 }
+
 
 # Clean up the variables and create a column for race.
 b19013_cleaned <- b19013_defns %>%
@@ -115,7 +121,7 @@ b19049_cleaned <- b19049_defns %>%
   select(variable = name, medhhincome, age) %>%
   mutate(across(.fns = ~replace_na(.x, "All")),
          across(.fns = ~str_remove_all(.x, ":")),
-         across(.fns =~ str_remove_all(.x, "in the past 12 months \\(\\in 2019 inflation-adjusted dollars\\)\\ --")))
+         across(.fns =~ str_remove_all(.x, "in the past 12 months \\(\\in 2023 inflation-adjusted dollars\\)\\ --")))
 
 # Get variables for Table B25118 and clean the variables. 
 b25118_defns <- load_variables(2023, "acs5") %>%

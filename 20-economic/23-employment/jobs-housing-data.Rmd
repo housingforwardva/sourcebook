@@ -45,7 +45,7 @@ knitr::opts_chunk$set(echo=TRUE, message=FALSE, warning=FALSE)
 # 
 
 
-va_hu <- read_excel("raw/CO-EST2022-HU-51.xlsx", skip = 3) |> 
+va_hu <- read_excel("raw/CO-EST2023-HU-51.xlsx", skip = 3) |> 
   janitor::clean_names() |> 
   rename(name_long = x1, base_estimate = x2) |> 
   filter(name_long != "Virginia") |> 
@@ -54,24 +54,25 @@ va_hu <- read_excel("raw/CO-EST2022-HU-51.xlsx", skip = 3) |>
   drop_na() |> 
   mutate(name_long = str_to_title(name_long))
 
-local_lookup <- read_csv("../../00-admin/va-cbsa-locality-lookup.csv")
+local_lookup <- read_csv("../../00-admin/va-cbsa-locality-lookup.csv") |> 
+  mutate(name_long = str_to_title(name_long))
 
 va_hu_join <- va_hu |> 
   left_join(local_lookup, by = "name_long") |> 
   mutate(fips_full = as.character(fips_full)) |> 
-  pivot_longer(2:5,
+  pivot_longer(2:6,
                names_to = "year",
-               values_to = "estimate") |> 
+               values_to = "estimate")|> 
   filter(year != "base_estimate") |> 
   mutate(year = case_when(
     year == "x2020" ~ 2020,
     year == "x2021" ~ 2021,
-    year == "x2022" ~ 2022
+    year == "x2022" ~ 2022,
+    year == "x2023" ~ 2023
   )) |> 
   mutate(fips_full = as.character(fips_full)) |> 
   select(name_long, fips_full, name_short, cbsa_title, estimate, year)
   
-
 
 va_hu_localities <- get_estimates(
   geography = "county",
@@ -117,7 +118,7 @@ jobs_list <- split(jobs_list, ceiling(seq_along(jobs_list)/50))
 
 bls_jobs_pull <- function(jobs_list){
   bls_api(jobs_list,
-          startyear = 2010, endyear = 2022, annualaverage = TRUE, Sys.getenv("BLS_KEY")) %>%
+          startyear = 2010, endyear = 2023, annualaverage = TRUE, Sys.getenv("BLS_KEY")) %>%
     dateCast()
 }
 
