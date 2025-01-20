@@ -49,9 +49,9 @@ knitr::opts_chunk$set(echo=TRUE, message=FALSE, warning=FALSE, eval = FALSE)
 # Data collection
 ```{r data-collect}
 # Create an object for years.
-years_full <- 2010:2022
+years_full <- 2010:2023
 years_partial_1 <- 2010:2014
-years_partial_2 <- 2015:2022
+years_partial_2 <- 2015:2023
 
 # Create object for tables.
 b25063 <- "B25063"
@@ -59,7 +59,7 @@ b25064 <- "B25064"
 
 # Get variables from tables.
 
-b25063_defns_2022 <- load_variables(2022, "acs5") %>%
+b25063_defns_2023 <- load_variables(2023, "acs5") %>%
   filter(str_sub(name, end = 6) == b25063) %>%
   filter(str_detect(name, "PR") == FALSE)
 
@@ -67,7 +67,7 @@ b25063_defns_2014 <- load_variables(2014, "acs5") %>%
   filter(str_sub(name, end = 6) == b25063) %>%
   filter(str_detect(name, "PR") == FALSE)
 
-b25064_defns <- load_variables(2022, "acs5") %>%
+b25064_defns <- load_variables(2023, "acs5") %>%
   filter(str_sub(name, end = 6) == b25064) %>%
   filter(str_detect(name, "PR") == FALSE)
 
@@ -79,7 +79,7 @@ b25063_cleaned_2014 <- b25063_defns_2014 %>%
   mutate(across(.fns = ~replace_na(.x, "All")),
          across(.fns = ~str_remove_all(.x, ":")))
 
-b25063_cleaned_2022 <- b25063_defns_2022 %>%
+b25063_cleaned_2023 <- b25063_defns_2023 %>%
   separate(label, into = c("est", "total", "cash", "rent"), sep = "!!") %>%
   select(variable = name, cash, rent) %>%
   mutate(across(.fns = ~replace_na(.x, "All")),
@@ -115,14 +115,14 @@ output_b25063_2014 <- map_dfr(years_partial_1, function(yr){
   acs_rearranged
 })
 
-output_b25063_2022 <- map_dfr(years_partial_2, function(yr){
+output_b25063_2023 <- map_dfr(years_partial_2, function(yr){
   acs_pull <- get_acs(
     geography = "county",
     table = b25063,
     year = yr,
     state = "VA"
   ) %>%
-    left_join(b25063_cleaned_2022, by = "variable")
+    left_join(b25063_cleaned_2023, by = "variable")
   
   acs_rearranged <- acs_pull %>%
     mutate(year = yr) %>%
@@ -182,7 +182,7 @@ output_b25064_state <- map_dfr(years_full, function(yr){
   acs_rearranged
 })
 
-output_b25063 <- rbind(output_b25063_2014, output_b25063_2022)
+output_b25063 <- rbind(output_b25063_2014, output_b25063_2023)
 ```
 
 # Data prep
@@ -224,7 +224,7 @@ cpi_rent <- fredr(
   summarise(index = mean(value))
 
 adjustment <- function(x) {
-  transform(x, adjusted = ((370.2016/index)*estimate))
+  transform(x, adjusted = ((399.6435/index)*estimate))
 }
 
 # Load the raw csv data file of CPI values by month for CPI for all items less shelter.

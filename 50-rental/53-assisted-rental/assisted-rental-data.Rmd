@@ -47,8 +47,8 @@ knitr::opts_chunk$set(
 # Data collection
 ```{r data-collect}
 
-# Date updated: 5-29-23
-va_subsidies <- read_xlsx("raw/nhpd_subsidies_va.xlsx")
+# Date updated: 1-16-25
+va_subsidies <- read_xlsx("raw/nhpd_subsidies_va_1.16.25.xlsx")
   
 va_subsidies <- va_subsidies %>% 
   mutate(fulladdress = paste(va_subsidies$`Street Address`, va_subsidies$`City`, va_subsidies$`State`, va_subsidies$`Zip Code`, sep = ", "))
@@ -62,6 +62,43 @@ lat_long <- va_subsidies %>%
           long = long)
 
 write_csv(lat_long, "data/va_subsidies_geocoded.csv")
+
+
+```
+
+
+
+```{r data-clean}
+
+# Date updated: 1-16-25
+va_subsidies <- read_xlsx("raw/nhpd_subsidies_va_1.16.25.xlsx") |> 
+  janitor::clean_names() |> 
+  filter(state == "VA") |> 
+  filter(subsidy_status != "Inactive")
+
+va_subsidies_geo <- va_subsidies |> 
+  filter(!is.na(longitude)) |> 
+  mutate(fulladdress = paste(street_address, city, state, zip_code, sep = ", "))
+
+va_subsidies_na <- va_subsidies |> 
+  filter(is.na(longitude)) |> 
+  mutate(fulladdress = paste(street_address, city, state, zip_code, sep = ", "))
+
+
+lat_long <- va_subsidies_na %>%
+  geocode(address = fulladdress, method = 'geocodio',
+          full_results = TRUE,
+          unique_only = FALSE,
+          lat = lat, 
+          long = long) 
+
+lat_long_mutate <- lat_long |> 
+  mutate(longitude = long,
+         latitude = lat)
+
+va_subsidies_geocode <- bind_rows(lat_long_mutate, va_subsidies_geo)
+
+write_csv(va_subsidies_geocode, "data/va_subsidies_geocoded.csv")
 
 
 ```
