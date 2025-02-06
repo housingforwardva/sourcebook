@@ -82,6 +82,9 @@ var_2024Q2 <- "raw/var_2024-Q2.xlsx"
 
 var_2024Q3 <- "raw/var_2024-Q3.xlsx"
 
+var_2024Q4 <- "raw/var_2024-Q4.xlsx"
+
+
 # Bring in locality data
 
 locality_raw <- var_hist_locality %>% 
@@ -157,6 +160,12 @@ locality_2024Q3 <- read_excel(var_2024Q3,
                               sheet = "CityCounty SFCT",
                               skip = 4) %>% 
   mutate(quarter = "2024 Q3",
+         .before = 1)
+
+locality_2024Q4 <- read_excel(var_2024Q4,
+                              sheet = "CityCounty SFCT",
+                              skip = 4) %>% 
+  mutate(quarter = "2024 Q4",
          .before = 1)
 
 # Bring in MSA data
@@ -235,6 +244,12 @@ msa_2024Q3 <- read_excel(var_2024Q3,
   mutate(quarter = "2024 Q3",
          .before = 1)
 
+msa_2024Q4 <- read_excel(var_2024Q4,
+                         sheet = "MSA SFCT",
+                         skip = 4) %>% 
+  mutate(quarter = "2024 Q4",
+         .before = 1)
+
 
 ```
 
@@ -246,13 +261,13 @@ msa_2024Q3 <- read_excel(var_2024Q3,
 # Add geography type variable
 
 locality_data <- locality_raw %>%
-  bind_rows(locality_2022Q1, locality_2022Q2, locality_2022Q3, locality_2022Q4, locality_2023Q1, locality_2023Q2, locality_2023Q3, locality_2023Q4, locality_2024Q1, locality_2024Q2, locality_2024Q3) %>% 
+  bind_rows(locality_2022Q1, locality_2022Q2, locality_2022Q3, locality_2022Q4, locality_2023Q1, locality_2023Q2, locality_2023Q3, locality_2023Q4, locality_2024Q1, locality_2024Q2, locality_2024Q3, locality_2024Q4) %>% 
   mutate(geography = "Locality",
          .before = 1) %>% 
   rename(name = 'City County')
 
 msa_data <- msa_raw %>% 
-  bind_rows(msa_2022Q1, msa_2022Q2, msa_2022Q3, msa_2022Q4, msa_2023Q1, msa_2023Q2, msa_2023Q3, msa_2023Q4, msa_2024Q1, msa_2024Q2, msa_2024Q3) %>% 
+  bind_rows(msa_2022Q1, msa_2022Q2, msa_2022Q3, msa_2022Q4, msa_2023Q1, msa_2023Q2, msa_2023Q3, msa_2023Q4, msa_2024Q1, msa_2024Q2, msa_2024Q3, msa_2024Q4) %>% 
   mutate(geography = "MSA",
          .before = 1) %>% 
   rename(name = 'MSA') %>% 
